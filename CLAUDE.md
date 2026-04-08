@@ -9,21 +9,29 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## 目录结构
 
 ```
-├── RL/           # 强化学习 (Reinforcement Learning) 相关论文
-│   └── 日报/      # RL 前沿每日日报
-├── VLA/          # 视觉-语言-动作模型 (Vision-Language-Action) 相关论文
-│   └── 日报/      # VLA 前沿每日日报
-├── WorldModel/   # 世界模型 (World Model) 相关论文
-│   └── 日报/      # WorldModel 前沿每日日报
-└── contents.md    # 论文目录索引
+├── RL/                     # 强化学习 (Reinforcement Learning) 相关论文
+│   └── 日报/               # RL 前沿每日日报
+├── VLA/                    # 视觉-语言-动作模型 (Vision-Language-Action) 相关论文
+│   ├── 日报/               # VLA 前沿每日日报
+│   └── *.md               # 论文精读报告
+├── WorldModel/            # 世界模型 (World Model) 相关论文
+│   ├── 日报/               # WorldModel 前沿每日日报
+│   └── *.md               # 论文解读文档
+├── skills/                # Claude Code 自定义技能
+│   └── self-improving-agent/
+├── AgentMemResearch/      # (预留目录)
+├── claudefollow/          # (预留目录)
+└── contents.md           # 论文目录索引（主索引）
 ```
 
-## 使用方式
+## 工作流程
 
 当用户提供论文进行阅读时：
-1. 首先根据论文主题将其分类到对应目录
-2. 如需保存论文摘要/笔记，使用对应目录下的 markdown 文件
-3. 更新 contents.md 中的论文索引
+1. 根据论文主题分类到对应目录（RL/VLA/WorldModel）
+2. 使用 Markdown 文件保存论文摘要/笔记，命名格式：`{论文名}-论文{类型}.md`
+3. 更新 `contents.md` 中的论文索引表
+
+contents.md 是全局索引，包含：论文名、会议/年份、核心贡献、文档链接。
 
 ## 日报功能
 
@@ -32,5 +40,5 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## 论文分类参考
 
 - **RL**: Q-learning, Policy Gradient, RLHF, Transformer-based RL 等
-- **VLA**: Robotics VLMs, RT-1/2, OpenVLA,具身智能等
+- **VLA**: Robotics VLMs, RT-1/2, OpenVLA, 具身智能等
 - **WorldModel**: World Models, Dreamer, imagination-based planning 等
