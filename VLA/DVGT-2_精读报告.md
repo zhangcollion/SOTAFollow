@@ -13,6 +13,8 @@
 
 DVGT-2 提出了 **Vision-Geometry-Action（VGA）** 端到端自动驾驶新范式：用稠密 3D 几何替代语言描述或稀疏感知作为规划的核心表征，通过滑动窗口流式架构实现 **O(1) 每帧复杂度**（仅 266ms 延迟），在 NAVSIM v1 仅用相机达到 **PDMS 90.3（SOTA）**，同时在几何重建任务上超越所有流式和批处理方法。
 
+![DVGT-2 Teaser](https://wzzheng.net/DVGT-2/resources/teaser.png)
+
 ---
 
 ## 2. 为什么这个问题值得研究？
@@ -105,6 +107,8 @@ $$\mathbf{C}_{t-W+1:t} = \text{FIFO}(\mathbf{C}_{t-W:t-1}, \hat{\mathbf{G}}_t)$$
   - Anchor-based Diffusion头 → 相对位姿 E_t
   - Anchor-based Diffusion头 → 未来轨迹 A_t
 ```
+
+![DVGT-2 Architecture](https://wzzheng.net/DVGT-2/resources/framework.png)
 
 时序因果注意力采用 **MRoPE-I**（相对时序位置编码），保证缓存特征在任意时间步可复用。
 
@@ -267,6 +271,8 @@ def dvgt2_streaming_inference(multiview_images, window_size=4):
     return results
 ```
 
+![DVGT-2 Streaming Inference](https://wzzheng.net/DVGT-2/resources/infer.png)
+
 ---
 
 ## 5. 实验结果
@@ -295,6 +301,8 @@ def dvgt2_streaming_inference(multiview_images, window_size=4):
 
 **DVGT-2-NAVSIM 达到 NAVSIM v1 SOTA（PDMS 90.3）**，超越所有 VLA 和端到端方法，仅用相机。
 
+![DVGT-2 Closed-Loop Planning](https://wzzheng.net/DVGT-2/resources/exp_closed_loop.png)
+
 ### 5.3 开环规划（nuScenes）
 
 | 方法 | L2@1s↓ | L2@2s↓ | L2@3s↓ | 碰撞率@3s↓ |
@@ -309,6 +317,8 @@ def dvgt2_streaming_inference(multiview_images, window_size=4):
 
 碰撞率显著低于 GenAD（0.50 vs 0.43），说明稠密几何让模型学到了更全面的 3D 结构物理交互。
 
+![DVGT-2 Open-Loop Planning](https://wzzheng.net/DVGT-2/resources/exp_open_loop.png)
+
 ### 5.4 效率对比
 
 | 指标 | VGGT | DVGT | StreamVGGT | **DVGT-2** |
@@ -317,6 +327,8 @@ def dvgt2_streaming_inference(multiview_images, window_size=4):
 | 内存增长 | O(T²) | O(T²) | O(T) | **O(1)** |
 
 266ms 每帧 + 常数内存，是目前最接近实际车载部署的几何重建+规划联合模型。
+
+![DVGT-2 Comparison](https://wzzheng.net/DVGT-2/resources/comparison.png)
 
 ---
 
