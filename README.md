@@ -12,6 +12,7 @@
 | 论文 | 会议/年份 | 核心贡献 | 文档 |
 |------|----------|----------|------|
 | Uni-World VLA | ECCV 2026 | 交错式世界建模与规划，冻结幻觉问题，NAVSIM PDMS 89.4 | [Uni-World VLA-论文精读-ECCV2026.md](./WorldModel/Uni-World%20VLA-论文精读-ECCV2026.md) |
+| MV-VDP | arXiv 2026 | 多视角视频扩散策略，视频基础模型联合预测 RGB 视频 + 热力图，5 demos Meta-World 89.1% | [MV-VDP_精读报告.md](./VLA/MV-VDP_精读报告.md) |
 | DreamerAD | - | 基于解析世界模型的自动驾驶车辆控制 | [DreamerAD-论文解读.md](./WorldModel/DreamerAD-论文解读.md) |
 
 ## RL
