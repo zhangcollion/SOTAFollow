@@ -25,6 +25,10 @@
 
 ## 3. 拟人化开篇
 
+![图 1：论文 Teaser — 同一场景多条轨迹跟随不同指令](assets/vega_fig1_teaser.jpeg)
+> **图 1**：同一场景下，给定不同指令（"Pull up to the side"、"Follow the car straight through the intersection"、"Goal along the road and pass the orange traffic barrier"、"Stop at the crosswalk, wait for the light to turn green"），Vega 能预测出完全不同的多条轨迹。（对应第 3 章）
+
+
 想象你坐在副驾驶，对司机说："**前面那辆车开得太慢了，超它然后赶下一个绿灯**"。一个普通司机听完会心领神会，果断变道加速——而老司机甚至能预判超车后前方路况会变成什么样。
 
 但大多数现有自动驾驶模型呢？它们只听得懂"左转"、"直行"这样封闭的导航指令，面对"超车赶绿灯"这种**灵活的自然语言指令**就束手无策了。它们要么模仿一个保守的专家策略，要么压根不理会你的个性化需求。
@@ -36,6 +40,10 @@
 ## 4. 背景与问题动机
 
 ### 4.1 自动驾驶技术演进路线
+
+![图 2：模型总览 — 传统模仿驾驶 vs Vega](assets/vega_fig2_overview.jpeg)
+> **图 2**：与传统模仿驾驶模型（只能预测单一专家轨迹）相比，Vega 可以根据不同自然语言指令生成多样化的规划轨迹和未来图像预测。左半边展示传统模型输入导航命令后输出单一轨迹；右半边展示 Vega 输入不同指令后输出对应的个性化轨迹和未来视觉预测。（对应第 4.1 节）
+
 
 自动驾驶技术栈经历了三次范式转变：
 
@@ -80,12 +88,6 @@ Vega 是一个**统一的自回归-扩散混合架构**，命名为 **Vision-Lan
 - **Diffusion** 范式 → 生成未来图像（世界建模）+ 轨迹（动作规划）
 - **Joint Attention** → 跨模态深度交互
 
-**图 2：模型总览**
-
-![图 2：模型总览](assets/vega_fig2_overview.jpeg)
-
-> **图 2 说明**：与传统模仿驾驶模型（只能预测单一专家轨迹）相比，Vega 可以根据不同自然语言指令生成多样化的规划轨迹和未来图像预测。左半边展示传统模型输入导航命令后输出单一轨迹；右半边展示 Vega 输入不同指令（"减速"、"跟随"、"加速超车"）后输出对应的个性化轨迹和未来视觉预测。
-
 ### 5.2 输入编码
 
 **文本**：Qwen2.5 tokenizer
@@ -123,12 +125,10 @@ S = [I_{t-T}, ..., I_t,  L_t,  A_t^{noisy}]
 - 从所有后续 token 遮蔽 Copy 1，确保它们只 attend to clean latents
 
 ### 5.4 Mixture-of-Transformers (MoT) 架构
-
-**图 3：统一 Vision-Language-World-Action 模型框架**
-
 ![图 3：MoT 架构框架](assets/vega_fig3_framework.jpeg)
+> **图 3**：Vega 的核心框架图，展示了多模态输入（Vision → VAE、Text → Qwen2.5 Tokenizer、Action → Linear）如何通过 Causal Attention 机制与 Understanding Transformer、Generation Transformer、Action Expert 三类模块交互，最终输出 Planning（动作规划）和 Generation（未来图像生成）。（对应第 5.4 节）
 
-> **图 3 说明**：Vega 的核心框架图，展示了多模态输入（Vision Tokenizer → VAE、Text → Qwen2.5 Tokenizer、Action → Linear）如何通过 Causal Attention 机制与 MoT 架构中的 Understanding Transformer、Generation Transformer、Action Expert 三类模块交互，最终输出 Planning（动作规划）和 Generation（未来图像生成）。时间线从左到右：Vision/Text/Action/Noised Action/Noised Image 在时间维度上依次排列，通过 Causal Attention 连接。
+
 
 与 MoE（仅 FFN 分离）不同，MoT 对**所有可学习参数**（attention + FFN）都为每个模组复制一套：
 
@@ -219,20 +219,14 @@ $$\mathcal{L} = \lambda_A \cdot \mathcal{L}_A + \lambda_V \cdot \mathcal{L}_V, \
 ## 7. 可视化与消融实验
 
 ### 7.1 指令跟随可视化
+![图 5：指令跟随规划可视化](assets/vega_fig5_planning.jpeg)
+> **图 5**：展示了两个场景（Scene 1 和 Scene 2）中，不同指令对车辆规划轨迹的影响。每个场景包含前视相机图像（上排）和对应的 BEV 地图（下排）。三条指令分别产生三条不同轨迹，验证了 Vega 对自然语言指令的精确理解和执行能力。（对应第 7.1 节）
 
-**图 5：指令对动作规划的影响**
-
-![图 5：指令跟随规划示例](assets/vega_fig5_planning.jpeg)
-
-> **图 5 说明**：展示了两个场景（Scene 1 和 Scene 2）中，不同指令对车辆规划轨迹的影响。每个场景包含前视相机图像（上排）和对应的 BEV 地图（下排）。Scene 1 测试三条指令：加速追上前车（Instruction A）、保持稳定跟随前车（Instruction B）、沿车道匀速行驶（Instruction C）。Scene 2 测试：立即加速通过前方路口（Instruction A）、减速停在斑马线前等红灯变绿（Instruction B）。每条指令都产生了对应的轨迹，验证了 Vega 对自然语言指令的精确理解和执行能力。
 
 ### 7.2 未来图像生成可视化
+![图 6：未来图像生成 — 条件于指令和动作](assets/vega_fig6_future_gen.jpeg)
+> **图 6**：同一场景下，给定三组不同指令，Vega 规划出三条不同的动作序列，并生成对应的高保真未来图像。所有动作序列都严格遵循各自指令，所有生成的未来图像都与对应动作保持时序一致性。（对应第 7.2 节）
 
-**图 6：条件于指令和动作的未来图像生成**
-
-![图 6：未来图像生成](assets/vega_fig6_future_gen.jpeg)
-
-> **图 6 说明**：同一场景下，给定三组不同指令，Vega 规划出三条不同的动作序列，并生成对应的高保真未来图像。三组示例分别展示了对前车的不同应对策略（加速、减速、绕行等）。所有动作序列都严格遵循各自指令，所有生成的未来图像都与对应动作保持时序一致性。这验证了 Vega 的世界建模框架成功帮助模型学习了驾驶环境的动态特性。
 
 ### 7.3 未来帧预测的消融（表 3）
 
