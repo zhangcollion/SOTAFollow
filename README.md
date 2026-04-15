@@ -18,7 +18,7 @@
 | 论文 | 会议/年份 | 核心贡献 | 文档 |
 |------|----------|----------|------|
 | Vega | arXiv 2026 | 统一 Vision-Language-World-Action 模型，自然语言指令驾驶，InstructScene 100K 数据集，NAVSIM EPDMS 89.4 SOTA | [Vega_精读报告.md](./VLA/Vega_精读报告.md) |
-| Uni-World VLA | ECCV 2026 | 交错式闭环 VLA，统一生成未来帧+动作 tokens | [→ WorldModel](./WorldModel/Uni-World%20VLA-论文精读-ECCV2026.md) |
+| Uni-World VLA | ECCV 2026 | 交错式闭环 VLA，统一生成未来帧+动作 tokens | [→ WorldModel](./WorldModel/Uni-World_VLA-论文精读-ECCV2026.md) |
 | DVGT-2 | arXiv 2026 | Vision-Geometry-Action 端到端自动驾驶，O(1) 帧复杂度，NAVSIM PDMS 90.3 | [DVGT-2_精读报告.md](./VLA/DVGT-2_精读报告.md) |
 | Actuate 2025 | 视频 2026 | Sergey Levine & Liyiming Ke：第二代 VLA 与机器人 Foundation Model，RL Post-training 是模仿学习的关键补充 | [Actuate2025_SergeyLevine_精读报告.md](./VLA/Actuate2025_SergeyLevine_精读报告.md) |
 
@@ -26,7 +26,7 @@
 
 | 论文 | 会议/年份 | 核心贡献 | 文档 |
 |------|----------|----------|------|
-| Uni-World VLA | ECCV 2026 | 交错式世界建模与规划，冻结幻觉问题，NAVSIM PDMS 89.4 | [Uni-World VLA-论文精读-ECCV2026.md](./WorldModel/Uni-World%20VLA-论文精读-ECCV2026.md) |
+| Uni-World VLA | ECCV 2026 | 交错式世界建模与规划，冻结幻觉问题，NAVSIM PDMS 89.4 | [Uni-World VLA-论文精读-ECCV2026.md](./WorldModel/Uni-World_VLA-论文精读-ECCV2026.md) |
 | MV-VDP | arXiv 2026 | 多视角视频扩散策略，视频基础模型联合预测 RGB 视频 + 热力图，5 demos Meta-World 89.1% | [MV-VDP_精读报告.md](./WorldModel/MV-VDP_精读报告.md) |
 | LeWorldModel | arXiv 2026 | 首个端到端 JEPA 世界模型，SIGReg 正则器防崩溃，15M 参数单 GPU 可训，48x 规划加速 | [LeWorldModel-论文精读报告.md](./WorldModel/LeWorldModel-论文精读报告.md) |
 | DreamerAD | arXiv 2026 | 基于解析世界模型的自动驾驶车辆控制，Shortcut Forcing 80× 加速，EPDMS 87.7 SOTA | [DreamerAD-论文解读.md](./WorldModel/DreamerAD-论文解读.md) |
