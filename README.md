@@ -50,3 +50,4 @@
 | ZeRO 优化器 | 零冗余优化器，数据并行状态分区，万亿参数模型训练 | [ZeRO-论文精读-sc20.md](./FM基础知识/ZeRO-论文精读-sc20.md) |
 | World Model 训练 Loss 设计 | ELBO / KL Balancing / JEPA / LPIPS / VQ-VAE Loss 详解，含主流 SOTA 工作Loss汇总 | [WorldModel训练Loss设计详解.md](./FM基础知识/WorldModel训练Loss设计详解.md) |
 | **Kimi Attention Residuals** | Moonshot AI：跨层选择性注意力残差连接，相同 Loss 下节省 25% 计算资源，Infra 是结构创新上限 | [Kimi_Attention_Residuals_精读报告.md](./FM基础知识/Kimi_Attention_Residuals_精读报告.md) |
+| **MINT: Mimic Intent, Not Trajectories** | 上交大：频域多尺度动作Tokenizer（SDAT），解耦Intent Token（S₁/低频）与Execution Tokens（S₂~Sₖ/高频），One-Shot跨任务迁移超越Fine-tuning 60pp，LIBERO 98.3% SOTA | [MINT-论文精读-arXiv2602.08602.md](./FM基础知识/MINT/MINT-论文精读-arXiv2602.08602.md) |
