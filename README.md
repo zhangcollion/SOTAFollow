@@ -40,6 +40,7 @@
 
 | 主题 | 简介 | 文档 |
 |------|------|------|
+| **大模型 Roadmap** | LLM 基础知识全景图：Transformer架构、主流模型、预训练、后训练、量化压缩、MoE、RAG&Agent、部署加速、模型评估、其他结构（SSM/Mamba等） | [大模型Roadmap.md](./FM基础知识/大模型Roadmap.md) |
 | TiTok | 统一视觉 Tokenizer，1D离散化 + VQ-GAN，SoTA 图像重建 + 视频理解 | [TiTok-论文精读-arXiv2406.07550.md](./FM基础知识/TiTok-论文精读-arXiv2406.07550.md) |
 | VQVAE 视觉 Tokenizer | Codebook 机制、视觉表征学习、World Model 视觉编码器 | [VQVAE视觉Tokenizer详解.md](./FM基础知识/VQVAE视觉Tokenizer详解.md) |
 | World Model / VLA 自回归框架 | 掩码设计、Action Token、VLA 与 World Model 结合的自回归范式 | [WorldModel-VLA自回归框架详解.md](./FM基础知识/WorldModel-VLA自回归框架详解.md) |
@@ -48,3 +49,4 @@
 | FlashAttention-2 | 改进的并行性和工作分配，循环顺序调换，HBM 访问进一步优化 | [FlashAttention2-论文精读-arXiv2307.08691.md](./FM基础知识/FlashAttention2-论文精读-arXiv2307.08691.md) |
 | ZeRO 优化器 | 零冗余优化器，数据并行状态分区，万亿参数模型训练 | [ZeRO-论文精读-sc20.md](./FM基础知识/ZeRO-论文精读-sc20.md) |
 | World Model 训练 Loss 设计 | ELBO / KL Balancing / JEPA / LPIPS / VQ-VAE Loss 详解，含主流 SOTA 工作Loss汇总 | [WorldModel训练Loss设计详解.md](./FM基础知识/WorldModel训练Loss设计详解.md) |
+| **Kimi Attention Residuals** | Moonshot AI：跨层选择性注意力残差连接，相同 Loss 下节省 25% 计算资源，Infra 是结构创新上限 | [Kimi_Attention_Residuals_精读报告.md](./FM基础知识/Kimi_Attention_Residuals_精读报告.md) |
