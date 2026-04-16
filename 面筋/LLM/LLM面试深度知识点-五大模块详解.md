@@ -4,6 +4,19 @@
 
 ---
 
+## 📚 相关论文精读索引
+
+本文涉及的关键技术论文精读报告：
+
+| 技术模块 | 论文精读报告 | 备注 |
+|---------|-------------|------|
+| LoRA | [LoRA 论文精读报告](../../FM基础知识/LoRA-论文精读-arXiv2106.09685.md) | Low-Rank Adaptation 原始论文 |
+| FlashAttention | [FlashAttention 论文精读报告](../../FM基础知识/FlashAttention-论文精读-arXiv2205.14135.md) | IO 感知的精确注意力算法 |
+| FlashAttention-2 | [FlashAttention-2 论文精读报告](../../FM基础知识/FlashAttention2-论文精读-arXiv2307.08691.md) | 改进的并行性和工作分配 |
+| ZeRO | [ZeRO 优化器论文精读报告](../../FM基础知识/ZeRO-论文精读-sc20.md) | 零冗余优化器 |
+
+---
+
 ## 📋 目录
 
 1. [🟢 模块一：LoRA (参数高效微调) 深度细节](#-模块一lora-参数高效微调-深度细节)

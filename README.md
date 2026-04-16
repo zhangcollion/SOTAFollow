@@ -42,3 +42,7 @@
 |------|------|------|
 | VQVAE 视觉 Tokenizer | Codebook 机制、视觉表征学习、World Model 视觉编码器 | [VQVAE视觉Tokenizer详解.md](./FM基础知识/VQVAE视觉Tokenizer详解.md) |
 | World Model / VLA 自回归框架 | 掩码设计、Action Token、VLA 与 World Model 结合的自回归范式 | [WorldModel-VLA自回归框架详解.md](./FM基础知识/WorldModel-VLA自回归框架详解.md) |
+| LoRA (参数高效微调) | Low-Rank Adaptation 原始论文精读，低秩适应机制、缩放因子设计 | [LoRA-论文精读-arXiv2106.09685.md](./FM基础知识/LoRA-论文精读-arXiv2106.09685.md) |
+| FlashAttention | IO 感知的精确注意力算法，分块计算 + 重新计算技术 | [FlashAttention-论文精读-arXiv2205.14135.md](./FM基础知识/FlashAttention-论文精读-arXiv2205.14135.md) |
+| FlashAttention-2 | 改进的并行性和工作分配，循环顺序调换，HBM 访问进一步优化 | [FlashAttention2-论文精读-arXiv2307.08691.md](./FM基础知识/FlashAttention2-论文精读-arXiv2307.08691.md) |
+| ZeRO 优化器 | 零冗余优化器，数据并行状态分区，万亿参数模型训练 | [ZeRO-论文精读-sc20.md](./FM基础知识/ZeRO-论文精读-sc20.md) |
