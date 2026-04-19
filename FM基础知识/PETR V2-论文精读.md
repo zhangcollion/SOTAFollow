@@ -113,7 +113,7 @@ VPN、Lift-Splat-Shoot、M²BEV、BEVFormer、BEVSegFormer 等，大多基于稠
 6. **任务专属查询**（Det/Seg/Lane）输入解码器。
 7. Transformer 解码器交互更新。
 8. **任务头**输出 3D 框、BEV 分割、3D 车道。
-9. ![PETR V2 Pipeline](titok_figures/image-20260418205057807.png)
+9. ![PETR V2 Pipeline](titok_figures/image-20260418205057807.png "width=800")
 
 ------
 

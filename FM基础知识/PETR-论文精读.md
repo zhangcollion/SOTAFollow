@@ -58,7 +58,7 @@
 
 3. 归一化：将 3D 坐标缩至 [0,1]，统一输入尺度。
 
-   ![PETR 3D Position Encoding](titok_figures/image-20260418202437582.png)
+   ![PETR 3D Position Encoding](titok_figures/image-20260418202437582.png "width=800")
 
 ### 3. 3D 位置编码器
 
@@ -193,7 +193,9 @@
 
 ### 5. 损失函数
 
-L(y,y^)=λcls∗Lcls(c,σ(c^))+Lreg(b,σ(b^))
+$$
+L(y, \hat{y}) = \lambda_{cls} \cdot L_{cls}(c, \sigma(\hat{c})) + L_{reg}(b, \sigma(\hat{b}))
+$$
 
 - Lcls：分类用 Focal Loss
 - Lreg：3D 框回归用 L1 Loss
