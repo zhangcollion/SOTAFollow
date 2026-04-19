@@ -113,7 +113,7 @@ VPN、Lift-Splat-Shoot、M²BEV、BEVFormer、BEVSegFormer 等，大多基于稠
 6. **任务专属查询**（Det/Seg/Lane）输入解码器。
 7. Transformer 解码器交互更新。
 8. **任务头**输出 3D 框、BEV 分割、3D 车道。
-9. ![image-20260418205057807](E:\github\code\LLM\SOTAFollow\FM基础知识\titok_figures\image-20260418205057807.png)
+9. ![PETR V2 Pipeline](titok_figures/image-20260418205057807.png)
 
 ------
 
@@ -201,7 +201,7 @@ PEi3d(t)=ξ(Fi(t))⊙ψ(Pil(t)(t))
 
 - ⊙：逐元素相乘
 
-  ![image-20260418205029065](E:\github\code\LLM\SOTAFollow\FM基础知识\titok_figures\image-20260418205029065.png)
+  ![PETR V2 Architecture](titok_figures/image-20260418205029065.png)
 
 ### 3.4.3 FPE 详细流程
 

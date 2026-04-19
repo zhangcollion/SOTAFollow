@@ -73,7 +73,7 @@
   
   3、内存（RAM / 系统内存）：CPU 用的内存（DDR5），GPU 不能直接访问，需 PCIe 拷贝，**速度慢、带宽低**。
   
-  <img src="E:\github\code\LLM2\SOTAFollow\面筋\LLM\fig\sram" alt="image-20260419144920153" style="zoom:30%;" />
+  ![SRAM Hierarchy](./fig/sram)
   
   4、GPU组网：
   

@@ -357,22 +357,7 @@ DreamerAD 提出了一个三管齐下的 latent world model RL 框架：
 
 ---
 
-## 2026-04-11 补充：Fast-WAM 精读
+## 参考链接
 
-### 完成情况
-- [x] 获取论文信息（arXiv abstract + HTML 全文）
-- [x] 获取 LeWorldModel 精读报告（已有）
-- [x] 撰写精读报告（含与 LeWorldModel 对比的 WM 演进哲学章节）
-- [x] 写本地文件
-
-### 关键发现
-- **核心问题**：WAMs 的增益到底来自训练时 video co-training 还是推理时显式未来想象？
-- **结论**：video co-training 是主导因素，test-time 未来想象可能是"伪需求"
-- Fast-WAM 无需具身预训练即达 91.8%（RoboTwin），推理延迟仅 190ms
-
-### 两种哲学
-- **LeWorldModel**：预测即理解，表示学习优先
-- **Fast-WAM**：训练即世界模型，推理只需表征
-
-### 参考博客
-https://zhuanlan.zhihu.com/p/2020176998459285938
+- **arXiv**: https://arxiv.org/abs/2603.24587
+- **PDF**: https://arxiv.org/pdf/2603.24587

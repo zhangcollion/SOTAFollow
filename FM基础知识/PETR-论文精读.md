@@ -58,7 +58,7 @@
 
 3. 归一化：将 3D 坐标缩至 [0,1]，统一输入尺度。
 
-   ![image-20260418202437582](E:\github\code\LLM\SOTAFollow\FM基础知识\titok_figures\image-20260418202437582.png)
+   ![PETR 3D Position Encoding](titok_figures/image-20260418202437582.png)
 
 ### 3. 3D 位置编码器
 
