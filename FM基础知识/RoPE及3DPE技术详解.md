@@ -1,33 +1,53 @@
 # RoPE、3DPE 与 mRoPE 技术详解
 
 > 本文档系统整理位置编码（Positional Encoding）技术：涵盖 NLP 经典方法（Sinusoidal、Learned、ALiBi、RoPE）、计算机视觉（2D PE、3DPE）、以及多模态时序融合（mRoPE）。
->
-> **视频来源**：丁师兄大模型 - [位置编码面经：Sinusoidal/Leaned/RoPE/3DPE/mRoPE](https://www.bilibili.com/video/BV1xxx)
 
 ---
 
-## 0. 位置编码全景图
+## 0. 背景：为什么需要位置编码？
 
-```
-┌─────────────────────────────────────────────────────────────────────────────┐
-│                        位置编码（Positional Encoding）分类                    │
-├─────────────────────────────────────────────────────────────────────────────┤
-│                                                                             │
-│  ┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐        │
-│  │  绝对位置编码     │    │  相对位置编码     │    │  混合位置编码    │        │
-│  ├─────────────────┤    ├─────────────────┤    ├─────────────────┤        │
-│  │ • Sinusoidal    │    │ • KERDI         │    │ • ALiBi         │        │
-│  │ • Learned       │    │ • XLNE           │    │ • RoPE          │        │
-│  │ • 3DPE          │    │ • RFNO          │    │ • mRoPE         │        │
-│  └─────────────────┘    └─────────────────┘    └─────────────────┘        │
-│                                                                             │
-│  【演进关系】                                                                │
-│  Sinusoidal → Learned → Relative PE → ALiBi / RoPE                        │
-│  2D PE → 3DPE（自动驾驶领域）                                               │
-│  RoPE → mRoPE（多维/时序扩展）                                              │
-│                                                                             │
-└─────────────────────────────────────────────────────────────────────────────┘
-```
+### 0.1 Transformer 的本质缺陷
+
+Transformer 的核心是 **Self-Attention** 机制，其数学本质是：
+
+$$
+\text{Attention}(Q, K, V) = \text{softmax}\left(\frac{QK^T}{\sqrt{d}}\right)V
+$$
+
+**问题**：$QK^T$ 的计算是**位置无关**的——对于 Self-Attention，无论 token 出现在序列的哪个位置，它们的交互方式完全相同。
+
+换句话说，Attention 机制是**置换等价（Permutation Equvariant）**的：
+
+$$
+\text{Attention}(\text{swap}(x_1, x_2)) = \text{swap}(\text{Attention}(x_1, x_2))
+$$
+
+这意味着，如果没有位置信息：
+- "狗咬人" 和 "人咬狗" 的语义会被模型认为是相同的
+- 图像中 "左上角的猫" 和 "右下角的猫" 会被同等对待
+- 视频中 "先抬手后挥手" 和 "先挥后抬手" 无法区分
+
+### 0.2 位置编码的目的
+
+**位置编码（Positional Encoding）** 的目的是：为序列中的每个位置注入独特的"签名"，让模型能够区分：
+
+| 维度 | 没有位置编码 | 有位置编码 |
+|------|------------|-----------|
+| NLP | "I saw a saw" 两个 saw 无法区分 | 能区分 "I [0] saw [1] a [2] saw [3]" |
+| Vision | 图像 patch 打乱后仍能处理 | 位置信息丢失，空间关系混乱 |
+| Video | 帧顺序打乱后特征相同 | 时序关系丢失，动作无法识别 |
+
+### 0.3 位置编码的评估维度
+
+评估一种位置编码方案的优劣，主要看以下几个维度：
+
+| 维度 | 含义 | 重要性 |
+|------|------|--------|
+| **外推性** | 训练时没见过更长序列，推理时能否处理？ | 关键 |
+| **相对位置感知** | 能否自然地表达 token 之间的距离？ | 关键 |
+| **表达能力** | 位置编码是否足够丰富，能区分任意位置？ | 重要 |
+| **参数效率** | 是否需要额外参数？参数越多越容易过拟合 | 一般 |
+| **维度支持** | 是否支持 2D/3D 等高维数据？ | 视任务而定 |
 
 ---
 
@@ -35,9 +55,25 @@
 
 ### 1.1 Sinusoidal Position Encoding（正弦位置编码）
 
-**来源**：Transformer 原始论文《Attention Is All You Need》(Vaswani et al., 2017)
+#### 背景与 Motivation
 
-**核心思想**：用不同频率的正弦和余弦函数编码位置。
+**来源**：《Attention Is All You Need》(Vaswani et al., 2017)
+
+**问题**：Transformer 的 Attention 是位置无关的，需要注入位置信息。
+
+**核心洞察**：自然语言中，**相对位置往往比绝对位置更重要**。例如：
+- "狗咬人" vs "人咬狗"——相对顺序决定语义
+- "我今天去了银行，银行很人多"——两个"银行"指代相同的事物，距离很近
+
+三角函数有一个重要性质：**线性组合可以表示相对位置**。
+
+如果 $\text{PE}(pos)$ 是位置 $pos$ 的编码，那么存在线性函数 $f$ 使得：
+
+$$
+f(\text{PE}(pos + \delta)) = g(\text{PE}(pos), \text{PE}(\delta))
+$$
+
+这意味着正弦位置编码可以**自然地表示相对位置**。
 
 #### 数学公式
 
@@ -49,6 +85,14 @@ $$
 $$
 \text{PE}(pos, 2i+1) = \cos\left(\frac{pos}{10000^{2i/d}}\right)
 $$
+
+**为什么这样设计？**
+
+| 设计选择 | 原因 |
+|---------|------|
+| 奇偶交替 sin/cos | 保证相邻维度线性无关 |
+| 指数级递减频率 | 低维 = 长周期 = 编码长距离；高维 = 短周期 = 编码短距离 |
+| 基数 10000 | 覆盖从 ~6 到 ~60000 的周期范围 |
 
 #### 伪代码
 
@@ -73,6 +117,9 @@ def sinusoidal_pe(max_len: int, d_model: int) -> torch.Tensor:
     position = torch.arange(0, max_len).unsqueeze(1).float()
 
     # 生成除数项: (d_model//2,)
+    # 推导: 要让维度 i 的周期为 T_i，需要 frequency = 1/T_i
+    # 设 base = 10000, 则 freq_i = base^(-2i/d) = 1/T_i
+    # 所以 T_i = 10000^(2i/d)
     div_term = torch.exp(
         torch.arange(0, d_model, 2).float() *
         (-np.log(10000.0) / d_model)
@@ -85,21 +132,6 @@ def sinusoidal_pe(max_len: int, d_model: int) -> torch.Tensor:
     pe[:, 1::2] = torch.cos(position * div_term)
 
     return pe  # (max_len, d_model)
-
-
-# ===== 示意图 =====
-"""
-       d_model (假设 d_model=8)
-       ┌────────────────────────────────────────────┐
-       │  sin(1/1)   cos(1/1)   sin(1/100)  cos(1/100) ...
-  pos=1│   0.841      0.540      0.0998      0.995
-  pos=2│   0.909      0.416      0.1987      0.980
-  pos=3│   0.141     -0.990      0.2955      0.955
-       └────────────────────────────────────────────┘
-
-低频维度(i小): 周期长 → 编码长距离位置
-高频维度(i大): 周期短 → 编码短距离位置
-"""
 ```
 
 #### 可视化示意
@@ -115,19 +147,32 @@ def sinusoidal_pe(max_len: int, d_model: int) -> torch.Tensor:
 │ sin(0)  ─●─●─●─●─●─●─●─●─●─●─●─●─●─●─●─→ pos
 ```
 
-#### 特点
+#### 特点总结
 
 | 优点 | 缺点 |
 |------|------|
-| 外推性好（三角函数可自然外推） | 无法学习相对位置 |
-| 无需参数 | 低频维度周期过长，短距离区分度差 |
-| 可表示任意相对位置（线性组合） | |
+| **外推性好**：三角函数可自然外推到任意长度 | 无法学习：纯手工设计，参数固定 |
+| **零参数**：无需学习参数 | 外推时远距离位置可能不准确 |
+| **相对位置表达**：线性组合可表示相对位置 | 低频维度周期过长，短距离区分度差 |
 
 ---
 
 ### 1.2 Learned Position Encoding（学习型位置编码）
 
-**核心思想**：将位置编码作为可学习参数，随机初始化后通过训练学习。
+#### 背景与 Motivation
+
+**问题**：Sinusoidal 是手工设计的，无法根据任务学习最优的位置编码方式。
+
+**核心洞察**：如果任务对位置信息有特定规律，那么让模型**自己学习**位置编码可能比手工设计更好。
+
+例如：
+- 在语义分割任务中，像素越靠近图像中心可能越重要
+- 在代码补全任务中，缩进层级决定了代码结构
+- 在情感分析中，句首的"但是"可能决定整个句子的情感
+
+#### 核心思想
+
+将位置编码作为可学习参数，随机初始化后通过训练学习。
 
 ```python
 class LearnedPE(nn.Module):
@@ -144,23 +189,38 @@ class LearnedPE(nn.Module):
         return self.pe(position_ids)  # 索引查找表
 ```
 
-#### 特点
+#### 特点总结
 
 | 优点 | 缺点 |
 |------|------|
-| 可端到端学习 | 外推性差（超出训练长度无法处理） |
-| 表达能力强 | 需要额外的位置参数 |
-| 常与 2D 图像位置结合使用 | 难以捕捉相对位置关系 |
+| **可端到端学习**：根据任务自适应调整 | **外推性差**：超出训练长度无法处理 |
+| **表达能力强**：可以学习任意复杂的位置规律 | 需要额外的可学习参数 |
+| **实现简单**：直接用 Embedding | 难以捕捉相对位置关系 |
 
 ---
 
 ### 1.3 Relative Position Encoding（相对位置编码）
 
-**核心思想**：不编码 token 的绝对位置，而是编码 token 之间的相对位置偏移 $i-j$。
+#### 背景与 Motivation
 
-#### KERDI（RPE鼻祖）
+**问题**：无论是 Sinusoidal 还是 Learned，都是**绝对位置编码**——它们编码的是 token 出现在序列的哪个位置，而不是 token 之间相隔多远。
 
-公式（来自 Shaw et al., 2018）：
+**核心洞察**：在自然语言中，**相对位置往往比绝对位置更重要**。
+
+例如：
+- "The cat sat on the mat" 中，"cat" 和 "mat" 隔着 5 个词，但它们是主语和宾语
+- "I don't think it's a good idea" 中，"don't" 和 "good" 的关系决定否定范围
+- 在代码中，"{" 和 "}" 的距离决定代码块
+
+相对位置编码直接建模 token 之间的距离，而不是它们的绝对位置。
+
+#### 发展脉络
+
+1. **Shaw et al., 2018**：首次提出相对位置编码（RPE），使用可学习的相对位置偏置
+2. **Huang et al., 2018**：XLNet 提出双路注意力，同时考虑前向和后向相对位置
+3. **Dai et al., 2019**：Transformer-XL 提出更高效的相对位置编码，支持长距离依赖
+
+#### Shaw RPE 公式
 
 $$
 \alpha_{ij} = \frac{q_i^T k_j}{\sqrt{d}} + w_{[i-j]}
@@ -219,13 +279,28 @@ class RelativePositionEncoding(nn.Module):
       └────────────────────┘
 ```
 
+#### 特点总结
+
+| 优点 | 缺点 |
+|------|------|
+| **直接建模相对位置**：更符合语言直觉 | 需要额外的相对位置参数 |
+| **外推性相对较好**：clipped 机制允许一定外推 | 相对位置需要手动设定范围 |
+| **可与绝对位置结合**：更灵活 | 计算量略有增加 |
+
 ---
 
 ### 1.4 ALiBi（Attention with Linear Biases）
 
-**来源**：《Train Short, Test Long: Attention with Linear Biases》(Press et al., 2021)
+#### 背景与 Motivation
 
-**核心思想**：在注意力分数上直接加一个线性偏置，无需任何位置编码参数，支持超长序列外推。
+**问题**：之前的相对位置编码都需要**可学习参数**（如相对位置 Embedding），这带来两个问题：
+1. 参数随相对位置范围线性增长
+2. 泛化能力受限：训练时没见过的距离，推理时无法处理
+
+**核心洞察**：如果使用**固定的、非学习的**相对位置偏置，而且这个偏置是**线性的**，那么：
+- 天然支持任意长度的外推
+- 无需学习参数
+- 线性惩罚天然实现"远程衰减"
 
 #### 数学公式
 
@@ -235,7 +310,11 @@ $$
 
 其中 $m$ 是每个注意力头的斜率，$m_k = 2^{-8/k}$（第 $k$ 个头）。
 
-#### 伪代码
+**为什么斜率是指数递减的？**
+
+这是为了让不同注意力头有不同的"注意力距离"：
+- 首几个头：斜率大 → 注意力更集中于近距离
+- 后面的头：斜率小 → 注意力更分散，能看到更远
 
 ```python
 def alibi_slope(num_heads: int) -> torch.Tensor:
@@ -252,21 +331,20 @@ def alibi_attention_bias(query_len: int, key_len: int,
     slopes = alibi_slope(num_heads)  # (num_heads,)
 
     # 生成距离矩阵: (query_len, key_len)
-    # position[i, j] = i - j
     q_idx = torch.arange(query_len).unsqueeze(1)  # (query_len, 1)
     k_idx = torch.arange(key_len).unsqueeze(0)    # (1, key_len)
-    distance = q_idx - k_idx                      # (query_len, key_len)
-    distance = distance.abs().float()             # 绝对距离
+    distance = (q_idx - k_idx).abs().float()     # 绝对距离
 
     # 扩展 slopes: (num_heads, 1, 1) × (1, query_len, key_len)
     slopes = slopes.view(num_heads, 1, 1)
-    bias = - slopes * distance.unsqueeze(0)      # (num_heads, query_len, key_len)
+    bias = - slopes * distance.unsqueeze(0)        # (num_heads, query_len, key_len)
 
-    return bias  # (num_heads, query_len, key_len)
+    return bias
+```
 
+#### 可视化
 
-# ===== 示意图 =====
-"""
+```
          key positions (j)
          0    1    2    3    4
       ┌─────────────────────────────┐
@@ -280,24 +358,37 @@ def alibi_attention_bias(query_len: int, key_len: int,
       │ -0.5   0  -0.5 -1.0 -1.5  │
       │ -1.0 -0.5   0  -0.5 -1.0  │
       └─────────────────────────────┘
-"""
 ```
 
-#### 特点
+#### 特点总结
 
 | 优点 | 缺点 |
 |------|------|
-| **外推性极佳**（线性惩罚自然外推） | 只能表示相对距离，不能表示绝对位置 |
-| **零参数** | 需要手动调参斜率 |
-| 支持任意长度 | |
+| **外推性极佳**：线性惩罚天然支持任意长度 | 只能表示相对距离，不能表示绝对位置 |
+| **零参数**：纯手工设计的固定偏置 | 需要手动调参斜率 |
+| **远程衰减**：距离越远注意力越低 | 对所有任务使用相同的斜率规律 |
 
 ---
 
 ## 2. RoPE：旋转位置编码
 
-### 2.1 概述
+### 2.1 背景与 Motivation
 
-RoPE（Rotary Position Embedding）由 Su et al. (2021) 提出，用**旋转矩阵**编码绝对位置，同时实现**相对位置**编码。
+**问题**：之前的相对位置方法都有明显缺陷：
+- Shaw RPE：有参数，外推性受限
+- ALiBi：零参数，但线性偏置与 Attention 分数直接相加，数学上不够优雅
+
+**核心洞察**（Su et al., 2021）：能否用**旋转矩阵**实现相对位置编码？
+
+旋转有一个重要性质：旋转的角度差等于相对旋转。
+
+如果一个向量旋转了角度 $m\theta$，另一个向量旋转了角度 $n\theta$，那么它们的点积仅与**相对角度**$(m-n)\theta$ 有关：
+
+$$
+(\text{Rot}(m\theta) q) \cdot (\text{Rot}(n\theta) k) = q \cdot \text{Rot}((m-n)\theta) k
+$$
+
+这意味着：**通过旋转编码绝对位置，attention score 自然变成相对位置的函数**！
 
 ### 2.2 核心数学
 
@@ -311,6 +402,19 @@ q_m^{(2i+1)} \rightarrow q_m^{(2i)} \sin(m\theta_i) + q_m^{(2i+1)} \cos(m\theta_
 $$
 
 其中旋转角度 $\theta_i = 10000^{-2i/d}$。
+
+**为什么能实现相对位置？**
+
+假设两个位置 $m$ 和 $n$ 的 query 和 key 分别经过旋转：
+- $\tilde{q}_m = \text{Rot}(m\theta) q_m$
+- $\tilde{k}_n = \text{Rot}(n\theta) k_n$
+
+它们的点积：
+$$
+\tilde{q}_m^T \tilde{k}_n = q_m^T \text{Rot}((m-n)\theta) k_n
+$$
+
+**仅依赖相对距离 $(m-n)$！**
 
 ### 2.3 伪代码
 
@@ -351,8 +455,6 @@ def apply_rotary_emb(q: torch.Tensor, k: torch.Tensor,
     返回:
         q_rot, k_rot: 应用 RoPE 后的 q, k
     """
-    # q, k 维度: (..., seq_len, head_dim)
-    # 需要 reshape 到 (..., seq_len, head_dim/2, 2) 以处理配对维度
     batch_size, num_heads, seq_len, head_dim = q.shape
     assert head_dim % 2 == 0
 
@@ -360,7 +462,7 @@ def apply_rotary_emb(q: torch.Tensor, k: torch.Tensor,
     q = q.view(*q.shape[:-1], head_dim // 2, 2)
     k = k.view(*k.shape[:-1], head_dim // 2, 2)
 
-    # 转成复数形式: (..., head_dim//2)
+    # 转成复数形式
     q_complex = torch.view_as_complex(q.float())
     k_complex = torch.view_as_complex(k.float())
 
@@ -372,22 +474,6 @@ def apply_rotary_emb(q: torch.Tensor, k: torch.Tensor,
     k_rot = torch.view_as_real(k_complex * freqs.unsqueeze(0).unsqueeze(0)).flatten(-2)
 
     return q_rot.type_as(q), k_rot.type_as(k)
-
-
-# ===== RoPE 示意图 =====
-"""
-1. 对奇偶维度配对:
-   q = [q_0, q_1, q_2, q_3, q_4, q_5, ...]
-            └──┘         └──┘
-           配对(0,1)    配对(2,3)
-
-2. 每对维度做旋转:
-   [q_0', q_1'] = [q_0, q_1] × [cos(mθ), -sin(mθ); sin(mθ), cos(mθ)]
-                         └── 旋转矩阵 ──┘
-
-3. 相对位置体现在点积中:
-   q_m · k_n = g(q, k, m-n)  ← 仅依赖相对距离！
-"""
 ```
 
 ### 2.4 RoPE 特性总结
@@ -408,18 +494,33 @@ def apply_rotary_emb(q: torch.Tensor, k: torch.Tensor,
 └──────────────────────────────────────────────────────────────┘
 ```
 
+### 2.5 RoPE 与其他方法的对比
+
+| 特性 | Sinusoidal | Learned | ALiBi | RoPE |
+|------|-----------|---------|-------|------|
+| 绝对/相对 | 绝对 | 绝对 | 相对 | **绝对+相对** |
+| 参数 | 无 | 有 | 无 | **无** |
+| 外推性 | 好 | 差 | 极好 | **好** |
+| 数学优雅性 | 一般 | 一般 | 一般 | **优雅（旋转群）** |
+
 ---
 
 ## 3. 2D 图像位置编码
 
-### 3.1 原始 Transformer 的 2D 扩展
+### 3.1 背景与 Motivation
 
-将 1D 位置编码扩展到 2D 图像，分别对 H 和 W 维度编码：
+**问题**：NLP 中的位置编码是 1D 的（序列顺序），但图像是 2D 的（空间位置）。
+
+**核心洞察**：将 1D 位置编码自然扩展到 2D，分别对 H 和 W 维度编码，然后拼接。
+
+**两种主要方法**：
+
+#### 方法一：Sinusoidal 2D 扩展
 
 ```python
 def positional_encoding_2d(height: int, width: int, d_model: int) -> torch.Tensor:
     """
-    生成 2D 图像位置编码
+    生成 2D 图像位置编码（Sinusoidal 扩展）
 
     返回: (H*W, d_model) 展平后的 2D 位置编码
     """
@@ -435,7 +536,7 @@ def positional_encoding_2d(height: int, width: int, d_model: int) -> torch.Tenso
     return pe.view(height * width, d_model)
 ```
 
-### 3.2 可学习 2D 位置编码
+#### 方法二：可学习 2D 位置编码
 
 ```python
 class Learned2DPositionalEncoding(nn.Module):
@@ -450,11 +551,25 @@ class Learned2DPositionalEncoding(nn.Module):
         return self.pe  # (1, H*W, d_model)
 ```
 
+### 3.2 2D 位置编码的问题
+
+**问题**：上述方法编码的是**绝对坐标** (row, col)，但对于图像来说，**相对位置关系**往往更重要：
+- "猫在沙发左边" — 需要知道猫和沙发的相对位置
+- 物体的空间关系决定了场景布局
+
+**解决方向**：
+- 引入相对位置编码
+- 使用 2D 版本的 RoPE（但相对复杂）
+
 ---
 
 ## 4. 3DPE：自动驾驶的 3D 位置编码
 
-### 4.1 问题背景
+### 4.1 背景与 Motivation
+
+**问题**：自动驾驶中，我们需要从多个 2D 相机图像重建 3D 空间信息。
+
+**核心矛盾**：
 
 ```
 ┌────────────────────────────────────────────────────────────────┐
@@ -463,16 +578,60 @@ class Learned2DPositionalEncoding(nn.Module):
 │                                                                │
 │  DETR3D:  3D query → 反复投影回 2D 采样 → 投影误差累积         │
 │                                                                │
-│  BEV类:   2D 图像 → 显式升维到 BEV → Z轴量化误差              │
+│  BEV类:   2D 图像 → 显式升维到 BEV → Z轴量化误差               │
 │                                                                │
 │  PETR:    2D 图像 + 3D坐标 → 3DPE融合 → 直接在 3D空间交互       │
 │                    ↑                                          │
-│              核心洞察：将 3D 几何信息编码进 2D 特征            │
+│              核心洞察：将 3D 几何信息编码进 2D 特征             │
 │                                                                │
 └────────────────────────────────────────────────────────────────┘
 ```
 
-### 4.2 PETR 3DPE 伪代码
+**核心洞察**：与其在 2D 图像上做复杂的投影采样，不如直接利用相机的几何参数（内参+外参），将每个像素的 3D 位置信息编码进特征。
+
+这样，注意力机制就能直接在 3D 空间工作，无需降维到 BEV 或反复投影。
+
+### 4.2 PETR 3DPE 详解
+
+#### 流程概述
+
+```
+相机图像 (H, W, 3)
+    ↓ 图像编码器
+2D 特征 (H, W, C)
+    ↓ 相机几何变换
+3D 坐标 (H, W, D, 3)  ← 每个像素在 3D 空间的射线点
+    ↓ MLP 编码
+3DPE (H, W, D, C)
+    ↓ 逐元素相加
+3D 位置感知特征 (H, W, D, C)
+```
+
+#### 核心思想
+
+**Step 1**：将相机锥台空间离散化为 3D 网格
+
+对于相机的每个像素 $(u, v)$，沿深度方向采样 $D$ 个点：
+
+$$
+(u \cdot d, v \cdot d, d), \quad d \in [d_{min}, d_{max}]
+$$
+
+**Step 2**：逆投影到 3D 世界坐标
+
+利用相机内外参，将锥台点投影到世界坐标系：
+
+$$
+P_{world} = K^{-1} \cdot [R|t]^{-1} \cdot (u \cdot d, v \cdot d, d, 1)^T
+$$
+
+**Step 3**：MLP 编码为位置嵌入
+
+$$
+\text{3DPE} = \text{MLP}(\text{normalize}(P_{world}))
+$$
+
+### 4.3 PETR 3DPE 伪代码
 
 ```python
 import torch
@@ -567,69 +726,6 @@ def generate_3d_world_points(
     points_3d_world = points_3d_world[..., :3]  # 去掉齐次项 (H, W, D, 3)
 
     return points_3d_world
-
-
-def petr_3d_aware_feature(
-    img_feature: torch.Tensor,   # (H, W, C) 2D图像特征
-    pe_3d: torch.Tensor          # (H, W, D, C) 3D位置编码
-) -> torch.Tensor:
-    """
-    融合 2D 图像特征和 3D 位置编码
-
-    返回: (H, W, D, C) 3D位置感知特征
-    """
-    # 扩展维度后相加
-    img_feature = img_feature.unsqueeze(2)  # (H, W, 1, C)
-    feat_3d = img_feature + pe_3d           # (H, W, D, C)
-    return feat_3d
-```
-
-### 4.3 3DPE 可视化
-
-```
-┌─────────────────────────────────────────────────────────────────────┐
-│                      PETR 3DPE 流程图                               │
-├─────────────────────────────────────────────────────────────────────┤
-│                                                                     │
-│   多视角图像 (6个相机)                                               │
-│         │                                                           │
-│         ▼                                                           │
-│   ┌─────────────────────────────────────────────────────────┐      │
-│   │  图像编码器 (ResNet/Swin)                                │      │
-│   │  输出: (H, W, C) 2D特征                                  │      │
-│   └─────────────────────────────────────────────────────────┘      │
-│         │                                                           │
-│         ▼                                                           │
-│   ┌─────────────────────────────────────────────────────────┐      │
-│   │  相机锥台空间 → 离散为 (H, W, D) 网格                    │      │
-│   │  D=64 深度采样点                                        │      │
-│   └─────────────────────────────────────────────────────────┘      │
-│         │                                                           │
-│         ▼                                                           │
-│   ┌─────────────────────────────────────────────────────────┐      │
-│   │  逆投影变换 (K矩阵)                                      │      │
-│   │  (u·d, v·d, d) → (x_world, y_world, z_world)            │      │
-│   └─────────────────────────────────────────────────────────┘      │
-│         │                                                           │
-│         ▼                                                           │
-│   ┌─────────────────────────────────────────────────────────┐      │
-│   │  坐标归一化                                               │      │
-│   │  x' = (x+50)/100, y' = (y+50)/100, z' = (z+5)/8        │      │
-│   └─────────────────────────────────────────────────────────┘      │
-│         │                                                           │
-│         ▼                                                           │
-│   ┌─────────────────────────────────────────────────────────┐      │
-│   │  MLP 编码 → 3DPE                                         │      │
-│   │  (x', y', z') → (H, W, D, C) 位置嵌入                    │      │
-│   └─────────────────────────────────────────────────────────┘      │
-│         │                                                           │
-│         ▼                                                           │
-│   ┌─────────────────────────────────────────────────────────┐      │
-│   │  逐元素相加: 2D特征 + 3DPE                               │      │
-│   │  → (H, W, D, C) 3D位置感知特征                          │      │
-│   └─────────────────────────────────────────────────────────┘      │
-│                                                                     │
-└─────────────────────────────────────────────────────────────────────┘
 ```
 
 ### 4.4 PETRv2 改进：FPE（Feature-Guided Position Encoding）
@@ -678,12 +774,10 @@ class PETRv2_FPE(nn.Module):
         D = points_3d.shape[3]
 
         # 特征分支: 1×1 Conv + Sigmoid → 注意力权重
-        # 输入: (B, C, H, W) → 输出: (B, C, H, W)
         attention_weight = self.feature_branch(img_feature)
         attention_weight = attention_weight.view(B, C, H, W)
 
         # 坐标分支: 归一化 + MLP → 基础3DPE
-        # 输入: (B, H, W, D, 3) → 输出: (B, H, W, D, C)
         x_norm = (points_3d[..., 0] + 50.0) / 100.0
         y_norm = (points_3d[..., 1] + 50.0) / 100.0
         z_norm = (points_3d[..., 2] + 5.0) / 8.0
@@ -691,11 +785,7 @@ class PETRv2_FPE(nn.Module):
         pe_base = self.coord_branch(coords_norm)
 
         # 逐元素乘法: 数据驱动的3DPE
-        # attention_weight: (B, C, H, W) → (B, H, W, 1, C) 广播
-        # pe_base: (B, H, W, D, C)
-        attn = attention_weight.permute(0, 2, 3, 1)  # (B, H, W, C)
-        attn = attn.unsqueeze(3)                       # (B, H, W, 1, C)
-
+        attn = attention_weight.permute(0, 2, 3, 1).unsqueeze(3)  # (B, H, W, 1, C)
         pe_fpe = attn * pe_base  # (B, H, W, D, C)
 
         return pe_fpe
@@ -717,53 +807,23 @@ class PETRv2_FPE(nn.Module):
 │   对齐变换矩阵:                                                      │
 │   T(t-1→t) = T(e(t)→l(t)) · T(g→e(t)) · T(g→e(t-1))⁻¹ · T(e(t-1)→l(t-1))⁻¹ │
 │                                                                     │
-│   对齐后: 帧t-1的3D坐标 → 帧t的坐标系 → concat特征                   │
+│   对齐后: 帧t-1的3D坐标 → 帧t的坐标系 → concat特征                  │
 │                                                                     │
 │   【关键洞察】                                                       │
 │   • 仅对齐3D坐标，不变换特征                                         │
-│   • 时序信息由3DPE自动携带                                           │
+│   • 时序信息由3DPE自动携带                                          │
 │   • 无需显式BEV变换                                                  │
 │                                                                     │
 └─────────────────────────────────────────────────────────────────────┘
-```
-
-```python
-def align_3d_coordinates(
-    points_tminus1: torch.Tensor,   # (H, W, D, 3) 帧t-1的3D坐标
-    T_tminus1_to_lidar: torch.Tensor,  # (4, 4) 帧t-1→激光雷达
-    T_t_to_lidar: torch.Tensor,         # (4, 4) 帧t→激光雷达
-    T_lidar_to_ego: torch.Tensor,      # 激光雷达→自车
-    T_world_to_ego: torch.Tensor,       # 世界→自车
-) -> torch.Tensor:
-    """
-    3D坐标时序对齐
-
-    将帧t-1的3D点对齐到帧t的坐标系
-    """
-    # 计算帧t-1 → 帧t的变换矩阵
-    T_tminus1_to_t = (
-        T_lidar_to_ego @           # 激光雷达 → 自车
-        T_world_to_ego @           # 世界 → 自车
-        T_world_to_ego.inverse() @ # 世界 → 自车 (t-1)逆
-        T_tminus1_to_lidar.inverse() @  # (t-1)激光雷达逆
-        T_t_to_lidar               # → t激光雷达
-    )
-
-    # 齐次坐标
-    ones = torch.ones_like(points_tminus1[..., :1])  # (H, W, D, 1)
-    points_homo = torch.cat([points_tminus1, ones], dim=-1)  # (H, W, D, 4)
-
-    # 变换到帧t的坐标系
-    points_aligned = torch.matmul(points_homo, T_tminus1_to_t.T)  # (H, W, D, 4)
-
-    return points_aligned[..., :3]  # 去掉齐次项
 ```
 
 ---
 
 ## 5. mRoPE：多维旋转位置编码
 
-### 5.1 为什么需要 mRoPE？
+### 5.1 背景与 Motivation
+
+**问题**：RoPE 只能处理 1D 序列位置，但在多模态任务中，位置往往是多维的：
 
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
@@ -778,18 +838,20 @@ def align_3d_coordinates(
 │                  └──┬──┘                                          │
 │                     位置需要2个数字: (row, col)                     │
 │                                                                     │
-│  Video (3D):     pixel(x, y, t)                                     │
+│  Video (3D):     pixel(x, y, t)                                    │
 │                  └─┬─┘ └──┬──┘                                    │
 │                    空间      时间                                    │
 │                                                                     │
-│  Autonomous:    lidar_point(x, y, z) + temporal                   │
-│                  └─────┬─────┘ └─────┬─────┘                      │
+│  Autonomous:    lidar_point(x, y, z) + temporal                    │
+│                  └─────┬─────┘ └─────┬─────┘                       │
 │                      空间           时间                            │
 │                                                                     │
 │  RoPE: 只能处理 1D位置 → mRoPE: 处理多维位置                        │
 │                                                                     │
 └─────────────────────────────────────────────────────────────────────┘
 ```
+
+**核心洞察**：RoPE 的旋转编码可以**维度分解**——每个维度独立旋转，最后拼接。
 
 ### 5.2 mRoPE 核心思想
 
@@ -902,63 +964,10 @@ class mRoPE(nn.Module):
 │  【MRoPE-I 关键】                                                   │
 │  • Query = 当前帧特征 (F_t)                                         │
 │  • Key/Value = 历史缓存 [F_{t-W}, ..., F_{t-1}]                    │
-│  • mRoPE-I 保证: 相对时间位置编码正确                               │
+│  • mRoPE-I 保证: 相对时间位置编码正确                                │
 │  • 缓存特征可跨时间步复用                                           │
 │                                                                     │
 └─────────────────────────────────────────────────────────────────────┘
-```
-
-```python
-class TemporalCausalAttention(nn.Module):
-    """
-    DVGT-2 时序因果注意力 (使用 MRoPE-I)
-    """
-
-    def __init__(self, window_size: int = 4, d_model: int = 256):
-        super().__init__()
-        self.window_size = window_size
-        self.num_heads = d_model // 64
-
-        # MRoPE-I: 相对时序位置编码
-        self.mrope_i = mRoPE(d_model, num_dims=1)  # 仅时间维度
-        freqs_T = self.mrope_i.precompute_freqs_cis(window_size)
-        self.register_buffer('freqs_T', freqs_T)
-
-    def forward(
-        self,
-        query: torch.Tensor,      # (B, num_tokens, d_model) 当前帧
-        key_value: torch.Tensor,   # (B, window_size*num_tokens, d_model) 缓存
-        position_ids: torch.Tensor  # (B, window_size) 时间位置索引
-    ) -> torch.Tensor:
-        """
-        时序因果注意力
-
-        • Query: 当前帧 (position = window_size)
-        • KV: 历史缓存 (position = 0, 1, ..., window_size-1)
-        • MRoPE-I: 让注意力仅依赖相对时间差
-        """
-        B, N, D = query.shape
-
-        # 切片 freqs_T: 取当前帧对应的时间位置
-        current_freq = self.freqs_T[-1:]  # (1, dim//2) 当前帧的旋转角度
-
-        # Reshape 进行旋转
-        query_complex = torch.view_as_complex(
-            query.float().reshape(B, N, -1, 2)
-        )
-        q_rot = torch.view_as_real(query_complex * current_freq).flatten(-2)
-
-        # 对 KV cache 应用相对时序位置编码
-        kv_complex = torch.view_as_complex(
-            key_value.float().reshape(B, -1, -1, 2)
-        )
-        k_rot = torch.view_as_real(kv_complex * self.freqs_T.unsqueeze(0)).flatten(-2)
-
-        # 注意力计算
-        attn_weights = torch.matmul(q_rot, k_rot.transpose(-2, -1)) / (D ** 0.5)
-        attn_weights = F.softmax(attn_weights, dim=-1)
-
-        return torch.matmul(attn_weights, key_value)
 ```
 
 ### 5.4 mRoPE 维度分解可视化
@@ -974,7 +983,7 @@ class TemporalCausalAttention(nn.Module):
 │              └─────┘    └─────┘    └─────┘                         │
 │                H维度     W维度      T维度                           │
 │                                                                     │
-│  旋转操作:                                                           │
+│  旋转操作:                                                          │
 │  x_H' = x_H × R(θ_H × pos_H)  (仅H维度旋转)                        │
 │  x_W' = x_W × R(θ_W × pos_W)  (仅W维度旋转)                        │
 │  x_T' = x_T × R(θ_T × pos_T)  (仅T维度旋转)                        │
@@ -983,7 +992,7 @@ class TemporalCausalAttention(nn.Module):
 │                                                                     │
 │  【关键性质】                                                        │
 │  • 三维度旋转互不干扰                                                │
-│  • 相对位置 = pos_H - pos_H' + pos_W - pos_W' + pos_T - pos_T'      │
+│  • 相对位置 = pos_H - pos_H' + pos_W - pos_W' + pos_T - pos_T'     │
 │  • 远程衰减在每个维度独立生效                                        │
 │                                                                     │
 └─────────────────────────────────────────────────────────────────────┘
@@ -1014,9 +1023,9 @@ class TemporalCausalAttention(nn.Module):
 │                                                                             │
 │  【演进趋势】                                                              │
 │  1. 从绝对→相对→混合：兼顾表达能力和泛化                                   │
-│  2. 从有参数→零参数：减少过拟合风险                                        │
+│  2. 从有参数→零参数：减少过拟合风险                                       │
 │  3. 从单维度→多维度：支持视觉、视频、多模态                                 │
-│  4. 从外推困难→自然外推：三角函数/线性偏置                                  │
+│  4. 从外推困难→自然外推：三角函数/线性偏置                                 │
 │                                                                             │
 └─────────────────────────────────────────────────────────────────────────────┘
 ```
@@ -1025,25 +1034,29 @@ class TemporalCausalAttention(nn.Module):
 
 ## 7. 面试回答模板
 
-### Q1: Sinusoidal 和 Learned PE 有什么区别？
+### Q1: 为什么 Transformer 需要位置编码？
 
-**答**：Sinusoidal 用正弦余弦函数编码位置，无需参数，外推性好，但无法学习相对位置；Learned PE 将位置作为可学习参数，表达能力强，但外推性差（超出训练长度无法处理）。实际中常用 Sinusoidal 作为基础版本。
+**答**：因为 Self-Attention 的本质是**置换等价**的——无论 token 出现在序列的哪个位置，它们的交互方式完全相同。如果不注入位置信息，"狗咬人"和"人咬狗"会被模型认为是相同的序列。位置编码让模型能够区分 token 的绝对位置和相对位置。
 
-### Q2: RoPE 的核心优势是什么？
+### Q2: Sinusoidal 和 Learned PE 有什么区别？
 
-**答**：RoPE 解决了三个问题：① 绝对位置编码通过旋转实现，无需参数；② attention score 仅依赖相对距离 $(m-n)$，自动捕获相对位置关系；③ 具有远程衰减特性，距离越远注意力自然衰减；④ 外推性好，三角函数可自然外推到更长序列。这也是为什么 LLaMA、Qwen 等主流大模型都选择 RoPE。
+**答**：Sinusoidal 用正弦余弦函数编码位置，无需参数，外推性好，但无法学习相对位置；Learned PE 将位置作为可学习参数，表达能力强，但外推性差（超出训练长度无法处理）。实际中常根据任务选择——如果任务对位置规律有特定先验，Sinusoidal 可能更好；如果需要完全自由学习，Learned PE 更合适。
 
-### Q3: 3DPE 在自动驾驶中解决什么问题？
+### Q3: RoPE 的核心优势是什么？
 
-**答**：3DPE 将相机几何（内参+外参+深度）编码进 2D 图像特征，让 DETR 类方法可以直接在 3D 空间做目标检测。具体流程是：相机锥台→逆投影→3D世界坐标→MLP编码→与2D特征融合。相比 BEV 方法，3DPE 避免了 Z 轴量化误差；相比 DETR3D，避免了反复投影采样。
+**答**：RoPE 解决了三个核心问题：① **绝对位置编码通过旋转实现，无需参数**，避免过拟合；② **attention score 仅依赖相对距离** $(m-n)$，自动捕获相对位置关系；③ **具有远程衰减特性**，距离越远注意力自然衰减；④ **外推性好**，三角函数可自然外推到更长序列。这也是为什么 LLaMA、Qwen、Gemma 等主流大模型都选择 RoPE。
 
-### Q4: mRoPE 和 RoPE 的区别？为什么要用 mRoPE？
+### Q4: 3DPE 在自动驾驶中解决什么问题？
 
-**答**：RoPE 只能处理 1D 序列位置，mRoPE 将其扩展到多维（空间H×W + 时间T），每个维度独立分配旋转轴。在 DVGT-2 中，mRoPE-I 通过相对时序位置编码，让 KV Cache 中的历史帧特征可以正确与当前帧交互，同时保持因果性（未来不attend过去）。
+**答**：3DPE 将相机几何（内参+外参+深度）编码进 2D 图像特征，让 DETR 类方法可以直接在 3D 空间做目标检测。具体流程是：相机锥台→逆投影→3D世界坐标→MLP编码→与2D特征融合。相比 BEV 方法，3DPE 避免了 Z 轴量化误差；相比 DETR3D，避免了反复投影采样误差累积。
 
-### Q5: ALiBi 和 RoPE 都能做相对位置编码，哪个更好？
+### Q5: mRoPE 和 RoPE 的区别？为什么要用 mRoPE？
 
-**答**：各有优劣。RoPE 用旋转矩阵，数学上更优雅（满足 $SO(d)$ 群性质），且零参数；ALiBi 用线性偏置，外推性更好（理论上可处理任意长度），但需要手动设置斜率。实践中 RoPE 应用更广（LLaMA、Qwen、Gemma），因为它更简洁且无需调参；ALiBi 在训练短、推理长的场景有优势（StreamingLLM）。
+**答**：RoPE 只能处理 1D 序列位置，mRoPE 将其扩展到多维（空间 H×W + 时间 T），每个维度独立分配旋转轴，各维度旋转互不干扰。在 DVGT-2 中，mRoPE-I 通过相对时序位置编码，让 KV Cache 中的历史帧特征可以正确与当前帧交互，同时保持因果性（未来帧不 attend 过去帧）。
+
+### Q6: ALiBi 和 RoPE 都能做相对位置编码，哪个更好？
+
+**答**：各有优劣。RoPE 用旋转矩阵，数学上更优雅（满足 $SO(d)$ 群性质），且零参数；ALiBi 用线性偏置，外推性更好（理论上可处理任意长度），但需要手动设置斜率。实践中 RoPE 应用更广（LLaMA、Qwen、Gemma），因为它更简洁且无需调参；ALiBi 在训练短、推理长的场景有优势（如 StreamingLLM）。
 
 ---
 
