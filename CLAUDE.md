@@ -25,6 +25,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ├── FM基础知识/             # 基础模型知识详解
 ├── skills/                # Claude Code 自定义技能
 │   └── self-improving-agent/
+├── .learnings/           # 经验记录（自我改进）
 ├── AgentMemResearch/      # (预留目录)
 ├── claudefollow/          # (预留目录)
 ├── check_lark_messages.py # 飞书机器人消息监听脚本
