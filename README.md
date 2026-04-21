@@ -33,10 +33,13 @@
 | LeWorldModel | arXiv 2026 | 首个端到端 JEPA 世界模型，SIGReg 正则器防崩溃，15M 参数单 GPU 可训，48x 规划加速 | [LeWorldModel-论文精读报告.md](./WorldModel/LeWorldModel-论文精读报告.md) |
 | DreamerAD | arXiv 2026 | 基于解析世界模型的自动驾驶车辆控制，Shortcut Forcing 80× 加速，EPDMS 87.7 SOTA | [DreamerAD-论文解读.md](./WorldModel/DreamerAD-论文解读.md) |
 | Fast-WAM | arXiv 2026 | 北大&华为：World Action Model 测试时想象是否必要？端到端规划加速 48× | [Fast-WAM_精读报告.md](./WorldModel/Fast-WAM_精读报告.md) |
+| **硅谷101-世界模型深度解读** | B站 2026 | 系统性拆解世界模型定义、三层研发结构（感知→预测→控制）、四大技术路线（视频生成/3D空间智能/智能体训练/JEPA），深度分析对机器人/自动驾驶/内容产业的颠覆，附 LeCun/李飞飞等关键人物观点 | [世界模型_视频笔记_硅谷101.md](./WorldModel/世界模型_视频笔记_硅谷101.md) |
 
 ## RL
 
-（暂无论文）
+| 论文 | 会议/年份 | 核心贡献 | 文档 |
+|------|----------|----------|------|
+| **FlowGRPO** | arXiv 2025 | 首个将 GRPO 引入 Flow Matching 的工作：marginal-preserving ODE-to-SDE 转换（推导 reverse-time SDE 并离散化）+ Denoising Reduction（训练10步/推理全步），SD3.5-M GenEval 63%→95%，几乎无 reward hacking | [FlowGRPO_精读报告.md](./RL/FlowGRPO_精读报告.md) |
 
 ## FM基础知识
 
