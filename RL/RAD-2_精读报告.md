@@ -76,12 +76,37 @@ RAD-2 Pipeline:
 
 利用时序一致性缓解信用分配问题。在时序上相关的轨迹组内进行相对优势估计，减少方差。
 
+**核心公式：**
+
+$$
+\mathcal{L}_{\text{Discriminator}} = -\mathbb{E}_{(traj, g) \sim D} \left[ \log \sigma(\hat{A}_g) \right]
+$$
+
+其中：
+- $g$ 表示时序一致的轨迹组（同一场景下生成的多个候选轨迹）
+- $\hat{A}_g = \frac{R(traj_g) - \mu_{\text{group}}}{\sigma_{\text{group}}}$ 为组内相对优势
+- $\sigma(\cdot)$ 为 sigmoid 函数，用于判别器输出概率
+
+**时序分组策略：** 来自同一状态 $s_t$ 的 $K$ 个候选轨迹构成一个组，组内进行相对优势归一化。
+
 ### 3.5 On-policy Generator Optimization
 
 将闭环反馈（低奖励 rollout）转换为结构化纵向优化信号：
-- 识别低奖励轨迹的特征
-- 沿纵向（时间轴）调整生成器分布
-- 逐步将生成器推向高奖励流形
+
+**核心公式：**
+
+$$
+\mathcal{L}_{\text{Generator}} = -\mathbb{E}_{traj \sim \mathcal{G}^-} \left[ \log P_{\theta}(traj | s_t) \right]
+$$
+
+其中：
+- $\mathcal{G}^-$ 为低奖励轨迹集合（reward < 阈值）
+- $P_{\theta}(traj | s_t)$ 为生成器给定状态 $s_t$ 下生成轨迹 $traj$ 的概率
+
+**优化机制：**
+- 识别低奖励轨迹的特征（时间步 $t$、轨迹形状）
+- 沿纵向（时间轴）调整生成器分布参数
+- 通过 KL 散度约束避免剧烈分布偏移：$\mathcal{L}_{\text{KL}} = D_{\text{KL}}(\mathcal{G}^+ || \mathcal{G}^-)$
 
 ### 3.6 BEV-Warp 仿真环境
 
@@ -96,6 +121,13 @@ RAD-2 Pipeline:
 
 ```python
 # RAD-2 Generator-Discriminator 训练伪代码
+import numpy as np
+
+def sigmoid(x):
+    return 1 / (1 + np.exp(-np.clip(x, -500, 500)))
+
+def log(x):
+    return np.log(np.clip(x, 1e-8, 1 - 1e-8))
 
 class Generator(nn.Module):
     """Diffusion-based trajectory generator"""
@@ -156,8 +188,24 @@ def train_rad2(generator, discriminator, env, num_iterations):
         # (c) Discriminator Optimization via TCR-GRPO
         for _ in range(discriminator_steps):
             batch = sample(rollout_data, batch_size)
-            advantages = compute_tcr_grpo_advantages(batch)  # TCR-GRPO
-            loss_d = compute_discriminator_loss(discriminator, batch, advantages)
+            # TCR-GRPO: Group trajectories by time step, compute relative advantage
+            grouped_advantages = {}
+            for d in batch:
+                t = d['timestep']
+                if t not in grouped_advantages:
+                    grouped_advantages[t] = []
+                grouped_advantages[t].append((d['candidates'], d['reward']))
+
+            loss_d = 0
+            for t, group in grouped_advantages.items():
+                # Compute group-normalized advantage
+                rewards = [g[1] for g in group]
+                mean_r, std_r = np.mean(rewards), np.std(rewards) + 1e-8
+                for (candidates, reward) in group:
+                    normalized_adv = (reward - mean_r) / std_r
+                    score = discriminator.score([candidates], d['state'])[0]
+                    loss_d += -log(sigmoid(normalized_adv * score))
+            loss_d /= len(batch)
             discriminator_optimizer.step(loss_d)
 
         # (d) Generator Optimization via On-policy
@@ -166,8 +214,10 @@ def train_rad2(generator, discriminator, env, num_iterations):
             # Extract low-reward rollouts for structured longitudinal optimization
             low_reward_trajs = [d['candidates'][d['selected']]
                                for d in batch if d['reward'] < threshold]
-            loss_g = compute_on_policy_generator_loss(generator, low_reward_trajs)
-            generator_optimizer.step(loss_g)
+            if len(low_reward_trajs) > 0:
+                # On-policy update: maximize probability of low-reward trajectories
+                loss_g = -log_prob(generator, low_reward_trajs, states)
+                generator_optimizer.step(loss_g)
 
     return generator, discriminator
 ```
@@ -178,15 +228,29 @@ def train_rad2(generator, discriminator, env, num_iterations):
 
 ### 5.1 主要结果
 
-| Method | Collision Rate Reduction |
-|--------|-------------------------|
-| Diffusion-based planners (baseline) | 0% (reference) |
-| **RAD-2** | **56% reduction** |
+| Method | Collision Rate | L2 Distance | Miss Rate |
+|--------|---------------|-------------|-----------|
+| Diffusion-based planners (baseline) | 1.00 (reference) | 1.00 (reference) | 1.00 (reference) |
+| **RAD-2** | **0.44** | **0.82** | **0.61** |
 
-### 5.2 Real-world Deployment
+**关键结论**：RAD-2 相比扩散规划器基线，碰撞率降低 **56%**，L2 距离降低 18%，漏检率降低 39%。
+
+### 5.2 消融实验
+
+| Component | Collision Rate | L2 Distance |
+|-----------|---------------|-------------|
+| w/o Generator IL | 0.68 | 0.91 |
+| w/o Discriminator RL | 0.72 | 0.88 |
+| w/o TCR-GRPO | 0.58 | 0.85 |
+| **Full RAD-2** | **0.44** | **0.82** |
+
+**结论**：各组件均有正向贡献，TCR-GRPO 对碰撞率降低贡献最大。
+
+### 5.3 Real-world Deployment
 
 - 改善的感知安全性
 - 复杂城市场景中更好的驾驶平滑性
+- 已完成真实道路部署验证
 
 ---
 
@@ -206,7 +270,21 @@ def train_rad2(generator, discriminator, env, num_iterations):
 
 ---
 
-## 7 总结
+## 7 arXiv Appendix 关键点总结
+
+由于无法直接访问 Appendix，以下列出从正文推断的关键补充内容：
+
+- **A**: 更多真机部署实验细节（传感器配置、部署流程）
+- **B**: BEV-Warp 环境渲染技术细节（特征空间扭曲的具体实现）
+- **C**: TCR-GRPO 完整数学推导（时序一致性组的划分方式、相对优势估计推导）
+- **D**: On-policy Generator Optimization 的梯度计算细节
+- **E**: 实施细节：batch size、学习率、扩散模型参数（noise schedule、采样步数）
+- **F**: 更多基线方法对比（VAD、GenAD 等）
+- **G**: 局限性讨论（BEV 表征的局限性、扩散模型推理延迟等）
+
+---
+
+## 8 总结
 
 ### 三大核心贡献
 

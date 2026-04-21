@@ -94,11 +94,13 @@ $$
 **价值函数：**
 
 $$
-V_x(s) = \text{MLP}(\phi(E_{\text{plan}}, E_{\text{scene}}) + E_{\text{navi}} + E_{\text{state}})
+V_x(s_t) = \text{MLP}(\phi(E_{\text{plan}}, E_{\text{scene}}) + E_{\text{navi}} + E_{\text{state}}; \theta_{V_x})
 $$
 $$
-V_y(s) = \text{MLP}(\phi(E_{\text{plan}}, E_{\text{scene}}) + E_{\text{navi}} + E_{\text{state}})
+V_y(s_t) = \text{MLP}(\phi(E_{\text{plan}}, E_{\text{scene}}) + E_{\text{navi}} + E_{\text{state}}; \theta_{V_y})
 $$
+
+其中 $V_x$ 和 $V_y$ 使用**独立的价值头**（网络参数 $\theta_{V_x}$ 和 $\theta_{V_y}$），分别估计横向和纵向状态价值。
 
 **自行车模型（Ego 车辆运动学）：**
 
@@ -134,38 +136,44 @@ $$
 **GAE 优势估计：**
 
 $$
-\delta_t^x = r_t^x + \gamma V_x(s_{t+1}) - V_x(s_t)
+\delta_t^{\text{lat}} = r_t^{\text{lat}} + \gamma V_x(s_{t+1}) - V_x(s_t)
 $$
 $$
-\delta_t^y = r_t^y + \gamma V_y(s_{t+1}) - V_y(s_t)
+\delta_t^{\text{lon}} = r_t^{\text{lon}} + \gamma V_y(s_{t+1}) - V_y(s_t)
 $$
 $$
-\hat{A}_t^x = \sum_{l=0}^{\infty} (\gamma \lambda)^l \delta_{t+l}^x
+\hat{A}_t^{\text{lat}} = \sum_{l=0}^{\infty} (\gamma \lambda)^l \delta_{t+l}^{\text{lat}}
 $$
 $$
-\hat{A}_t^y = \sum_{l=0}^{\infty} (\gamma \lambda)^l \delta_{t+l}^y
+\hat{A}_t^{\text{lon}} = \sum_{l=0}^{\infty} (\gamma \lambda)^l \delta_{t+l}^{\text{lon}}
 $$
+
+其中 $\gamma$ 为折扣因子，$\lambda$ 为 GAE 参数。
 
 **Reward 分解：**
 
 $$
-r_t^x = r_t^{\text{sc}} + r_t^{\text{pd}} + r_t^{\text{hd}}
+r_t^{\text{lat}} = r_t^{\text{sc}} + r_t^{\text{pd}} + r_t^{\text{hd}} \quad \text{(横向奖励：静态碰撞 + 位置偏移 + 航向偏移)}
 $$
 $$
-r_t^y = r_t^{\text{dc}}
+r_t^{\text{lon}} = r_t^{\text{dc}} \quad \text{(纵向奖励：动态碰撞)}
 $$
+
+其中横向奖励 $r_t^{\text{lat}}$ 和纵向奖励 $r_t^{\text{lon}}$ 分别用于横向和纵向动作的价值估计和优势计算。
 
 **PPO 目标函数：**
 
 $$
-\mathcal{L}_x^{\text{PPO}}(\theta) = \mathbb{E}_t \left[ \min\left( \rho_t^x \hat{A}_t^x, \text{clip}(\rho_t^x, 1-\epsilon_x, 1+\epsilon_x) \hat{A}_t^x \right) \right]
+\mathcal{L}_{\text{lat}}^{\text{PPO}}(\theta) = \mathbb{E}_t \left[ \min\left( \rho_t^{\text{lat}} \hat{A}_t^{\text{lat}}, \text{clip}(\rho_t^{\text{lat}}, 1-\epsilon_{\text{lat}}, 1+\epsilon_{\text{lat}}) \hat{A}_t^{\text{lat}} \right) \right]
 $$
 $$
-\mathcal{L}_y^{\text{PPO}}(\theta) = \mathbb{E}_t \left[ \min\left( \rho_t^y \hat{A}_t^y, \text{clip}(\rho_t^y, 1-\epsilon_y, 1+\epsilon_y) \hat{A}_t^y \right) \right]
+\mathcal{L}_{\text{lon}}^{\text{PPO}}(\theta) = \mathbb{E}_t \left[ \min\left( \rho_t^{\text{lon}} \hat{A}_t^{\text{lon}}, \text{clip}(\rho_t^{\text{lon}}, 1-\epsilon_{\text{lon}}, 1+\epsilon_{\text{lon}}) \hat{A}_t^{\text{lon}} \right) \right]
 $$
 $$
-\mathcal{L}^{\text{PPO}}(\theta) = \mathcal{L}_x^{\text{PPO}}(\theta) + \mathcal{L}_y^{\text{PPO}}(\theta)
+\mathcal{L}^{\text{PPO}}(\theta) = \mathcal{L}_{\text{lat}}^{\text{PPO}}(\theta) + \mathcal{L}_{\text{lon}}^{\text{PPO}}(\theta)
 $$
+
+其中 $\rho_t^{\text{lat}} = \frac{\pi_{\theta}(a_t^{\text{lat}}|s_t)}{\pi_{\theta_{\text{old}}}(a_t^{\text{lat}}|s_t)}$ 为重要性采样比率，$\epsilon_{\text{lat}}, \epsilon_{\text{lon}}$ 为裁剪阈值。
 
 ---
 
@@ -206,7 +214,7 @@ def reinforced_posttraining(policy, gs_environments, demonstrations):
     for _ in range(training_steps):
         # PPO update
         batch = sample(rollout_buffer, batch_size)
-        advantages = compute_gae(batch)  # Eq.6
+        advantages = compute_gae(batch)  # 使用 lat/lon 分解的 GAE
         loss_ppo = compute_ppo_loss(policy, batch, advantages)  # Eq.8
 
         # IL regularization
