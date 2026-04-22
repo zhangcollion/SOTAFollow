@@ -7,7 +7,30 @@
 
 ---
 
-## 1️⃣ 一句话评价
+## 1. Motivation（问题背景）
+
+### 1.1 Pixel-level World Model 的效率困境
+
+现有 pixel-level diffusion world model（如 Epona）每帧推理约 **2 秒延迟**，而 RL 交互需要 10-20 Hz 以上的频率，两者根本不兼容。此外像素级目标关注"视觉保真度"而非"驾驶安全性"——一张模糊的街景和一张清晰的街景在像素空间差异很大，但隐空间里它们的语义特征可能非常接近，后者对驾驶决策更有价值。
+
+### 1.2 视频扩散模型的新发现
+
+作者发现 Video DiT（Epona）的去噪后 latent feature 具有极强的**空间结构和语义一致性**（见论文 Fig.2 PCA 可视化）。这意味着可以在隐空间而非像素空间做世界建模，同时保留解码出 RGB 帧做可解释性分析的能力。
+
+### 1.3 RL 训练的效率障碍
+
+World Model + RL 因效率太低无法落地：
+- 100 步扩散采样 = ~2s/帧延迟，无法支持高频 RL 交互
+- 像素空间的试错训练成本高昂
+- reward annotation 依赖大量仿真数据
+
+### 1.4 DreamerAD 的核心出发点
+
+DreamerAD 首次在隐空间而非像素空间完成自动驾驶 RL 训练，通过 Shortcut Forcing 将扩散采样从 100 步压缩至 1 步（80× 加速），在 NavSim v2 闭环 benchmark 拿下 **87.7 EPDMS SOTA**，终结了"world model + RL 因效率太低无法落地"的历史。
+
+---
+
+## 2️⃣ 一句话评价
 
 DreamerAD 首次在隐空间而非像素空间完成自动驾驶 RL 训练，通过 Shortcut Forcing 将扩散采样从 100 步压缩至 1 步（80× 加速），在 NavSim v2 闭环 benchmark 拿下 **87.7 EPDMS SOTA**，终结了"world model + RL 因效率太低无法落地"的历史。
 
