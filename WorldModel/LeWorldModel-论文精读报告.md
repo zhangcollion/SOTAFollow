@@ -76,7 +76,7 @@ $$\mathcal{L}_{\text{LeWM}} = \underbrace{\|\hat{z}_{t+1} - z_{t+1}\|_2^2}_{\tex
 $$\text{SIGReg}(Z) = \frac{1}{M} \sum_{m=1}^{M} T\left( h^{(m)} \right)$$
 
 其中：
-- $h^{(m)} = Z \cdot u^{(m)}$，是 $Z$ 在随机单位向量 $u^{(m)} \in \mathbb{S}^{d-1}$ 上的投影
+- $h^{(m)} = Z \cdot u^{(m)}$，是 $Z$ 在随机单位向量 $u^{(m)} \in \mathbf{S}^{d-1}$ 上的投影
 - $T(\cdot)$ 是 Epps-Pulley  normality test 统计量
 - $M = 1024$ 个投影方向（默认）
 

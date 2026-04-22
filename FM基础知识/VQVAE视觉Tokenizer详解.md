@@ -51,7 +51,7 @@ VQVAE 的"灵魂三问"：
 
 **本质：把连续向量映射到最近的码本向量**
 
-给定 Encoder 输出 $h_e(x) \in \mathbb{R}^D$，量化操作：
+给定 Encoder 输出 $h_e(x) \in \mathbf{R}^D$，量化操作：
 
 $$
 z_q(x) = e_k, \quad \text{其中} \quad k = \arg\min_j \|h_e(x) - e_j\|_2^2
@@ -397,7 +397,7 @@ $$
 
 ### 5.1 码本是什么？
 
-**码本（Codebook）** 是一个可学习的查找表 $\mathcal{E} = \{e_1, e_2, ..., e_K\}, e_k \in \mathbb{R}^D$。
+**码本（Codebook）** 是一个可学习的查找表 $\mathcal{E} = \{e_1, e_2, ..., e_K\}, e_k \in \mathbf{R}^D$。
 
 - $K$ = **码本大小**（视觉词表容量）
 - $D$ = **码字维度**（每个码字的向量维度）

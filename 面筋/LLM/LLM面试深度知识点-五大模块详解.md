@@ -45,9 +45,9 @@ LoRA 在计算 $\Delta W = AB$ 后，其实还会乘以一个缩放因子 $\frac
 $$h = W_0 x + \Delta W x = W_0 x + \frac{\alpha}{r} B A x$$
 
 其中：
-- $W_0 \in \mathbb{R}^{d \times k}$：预训练权重
-- $A \in \mathbb{R}^{r \times k}$：随机高斯初始化
-- $B \in \mathbb{R}^{d \times r}$：零初始化
+- $W_0 \in \mathbf{R}^{d \times k}$：预训练权重
+- $A \in \mathbf{R}^{r \times k}$：随机高斯初始化
+- $B \in \mathbf{R}^{d \times r}$：零初始化
 - $\alpha$：缩放超参数，通常设为 $r$ 或 $1$
 
 ### 为什么这么设计

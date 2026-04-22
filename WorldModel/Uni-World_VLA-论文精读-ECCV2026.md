@@ -73,7 +73,7 @@ Uni-World VLA 的核心思想可以用一句话概括：
 
 ### 3.3 输入与 Token 化
 
-假设历史帧序列为 $\{I_{t-M}, \dots, I_{t-1}\}$（M 帧），每帧 $I \in \mathbb{R}^{H \times W \times 3}$。
+假设历史帧序列为 $\{I_{t-M}, \dots, I_{t-1}\}$（M 帧），每帧 $I \in \mathbf{R}^{H \times W \times 3}$。
 
 模型将历史视频流分成两个互补的模态：
 
@@ -168,7 +168,7 @@ $$
 为了让世界模型有更好的空间感知能力，论文引入了单目深度信息。使用 Depth Anything 3 从输入图像提取深度图：
 
 $$
-D = \text{DepthAnything3}(I), \quad I \in \mathbb{R}^{H \times W \times 3},\ D \in \mathbb{R}^{H \times W}
+D = \text{DepthAnything3}(I), \quad I \in \mathbf{R}^{H \times W \times 3},\ D \in \mathbf{R}^{H \times W}
 $$
 
 深度图被缩放到两个分辨率（256×448 和 128×224），分别送入两个深度编码器（基于 MagVIT-v2）：
