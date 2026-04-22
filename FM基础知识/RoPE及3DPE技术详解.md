@@ -14,7 +14,7 @@ $$
 \text{Attention}(Q, K, V) = \text{softmax}\left(\frac{QK^T}{\sqrt{d}}\right)V
 $$
 
-**问题**：$QK^T$ 的计算是**位置无关**的——对于 Self-Attention，无论 token 出现在序列的哪个位置，它们的交互方式完全相同。
+**问题**：$QK^{T}$ 的计算是**位置无关**的——对于 Self-Attention，无论 token 出现在序列的哪个位置，它们的交互方式完全相同。
 
 换句话说，Attention 机制是**置换等价（Permutation Equvariant）**的：
 
@@ -308,7 +308,7 @@ $$
 \alpha_{ij} = \frac{q_i^T k_j}{\sqrt{d}} - |i - j| \cdot m
 $$
 
-其中 $m$ 是每个注意力头的斜率，$m_k = 2^{-8/k}$（第 $k$ 个头）。
+其中 $m$ 是每个注意力头的斜率，$m_{k} = 2^{-8/k}$（第 $k$ 个头）。
 
 **为什么斜率是指数递减的？**
 
@@ -392,7 +392,7 @@ $$
 
 ### 2.2 核心数学
 
-**对于位置 $m$ 的 query 向量 $q_m$**，RoPE 对每对维度 $(2i, 2i+1)$ 做 2D 旋转：
+**对于位置 $m$ 的 query 向量 $q_{m}$**，RoPE 对每对维度 $(2i, 2i+1)$ 做 2D 旋转：
 
 $$
 q_m^{(2i)} \rightarrow q_m^{(2i)} \cos(m\theta_i) - q_m^{(2i+1)} \sin(m\theta_i)
@@ -401,13 +401,13 @@ $$
 q_m^{(2i+1)} \rightarrow q_m^{(2i)} \sin(m\theta_i) + q_m^{(2i+1)} \cos(m\theta_i)
 $$
 
-其中旋转角度 $\theta_i = 10000^{-2i/d}$。
+其中旋转角度 $\theta_{i} = 10000^{-2i/d}$。
 
 **为什么能实现相对位置？**
 
 假设两个位置 $m$ 和 $n$ 的 query 和 key 分别经过旋转：
-- $\tilde{q}_m = \text{Rot}(m\theta) q_m$
-- $\tilde{k}_n = \text{Rot}(n\theta) k_n$
+- $\tilde{q}_{m} = \text{Rot}(m\theta) q_{m}$
+- $\tilde{k}_{n} = \text{Rot}(n\theta) k_{n}$
 
 它们的点积：
 $$

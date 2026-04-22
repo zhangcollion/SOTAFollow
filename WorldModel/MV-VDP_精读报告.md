@@ -71,7 +71,7 @@ $$H_i^t(\mathbf{x}) = \begin{cases} p_i^t(\mathbf{x}), & \text{if } p_i^t(\mathb
 
 $$p_i^t(\mathbf{x}) = \exp\left(-\frac{\|\mathbf{x} - \widehat{\mathbf{x}}_i^t\|^2}{2\sigma^2}\right)$$
 
-其中 $\widehat{\mathbf{x}}_i^t$ 是第 $i$ 个末端执行器在视角 $t$ 上的投影中心，$\sigma$ 控制热力图标准差，$\tau$ 为截断阈值。低于 $\tau$ 的像素置零，热力图经着色后可直接送入预训练 VAE encoder。
+其中 $\widehat{\mathbf{x}}_{i}^{t}$ 是第 $i$ 个末端执行器在视角 $t$ 上的投影中心，$\sigma$ 控制热力图标准差，$\tau$ 为截断阈值。低于 $\tau$ 的像素置零，热力图经着色后可直接送入预训练 VAE encoder。
 
 ### 3.4 多视角视频扩散（Multi-View Video Diffusion）
 

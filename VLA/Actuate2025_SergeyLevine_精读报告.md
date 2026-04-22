@@ -11,37 +11,9 @@
 
 ---
 
-## 1. 视频概述
+## 1. Motivation（问题背景）
 
-### 1.1 基本信息
-
-| 信息项 | 内容 |
-|--------|------|
-| 视频标题 | Actuate 2025: Robotic Foundation Models with Liyiming Ke & Sergey Levine |
-| 嘉宾 | **Sergey Levine**（UC Berkeley 教授，Berkeley AI Research）<br>**Liyiming Ke**（卡内基梅隆大学） |
-| 会议 | Actuate 2025 - Foxglove 机器人开发者大会 |
-| 时长 | 25:06 |
-| 内容分类 | VLA (Vision-Language-Action Model) / 机器人 Foundation Model / 具身智能 |
-
-### 1.2 议题与关键词
-
-从视频标题和 Sergey Levine 的研究轨迹推断，本次演讲聚焦以下核心议题：
-
-- **第二代 VLA 架构设计**：从 RT-1/RT-2（第一代）到 π₀/π₀.₅（第二代）的范式演进
-- **数据多样性（Data Diversity）**：跨机器人形态（cross-embodiment）、跨场景数据收集
-- **互联网视频作为预训练信号**：利用大规模未标注视频学习物理常识
-- **BC-Z 的启示**：行为克隆（Behavior Cloning）与示教学习（Learning from Demonstrations）
-- **Foundation Model 训练策略**：如何用有限示教数据泛化到长尾任务
-
-### 1.3 一句话总结
-
-> **Sergey Levine 在 Actuate 2025 上系统梳理了机器人 Foundation Model 的演进路径：互联网视频预训练提供物理常识，跨形态数据实现泛化，VLA 架构从"感知-动作"端到端映射，第二代 VLA 的核心在于用强化学习后训练（RL Post-training）弥补模仿学习的数据分布缺陷。**
-
----
-
-## 2. 研究背景与问题动机
-
-### 2.1 什么是机器人 Foundation Model？
+### 1.1 什么是机器人 Foundation Model？
 
 **图1：机器人 Foundation Model 定位**
 
@@ -65,7 +37,7 @@
 
 Sergey Levine 在演讲中指出，机器人 Foundation Model 的目标是**从大规模、多样化的数据中学习可泛化的策略**，类似于 NLP 中的 GPT —— 预训练一个大模型，在下游任务上微调即可。
 
-### 2.2 第一代 VLA 的局限性（RT-1 / RT-2）
+### 1.2 第一代 VLA 的局限性（RT-1 / RT-2）
 
 | 方法 | 核心思路 | 局限性 |
 |------|---------|--------|
@@ -78,7 +50,7 @@ Levine 指出第一代 VLA 的核心问题：
 - **泛化不足**：在未见过的物体/场景上性能骤降
 - **物理常识缺失**：无法理解"柔软物体要轻拿轻放"这类常识
 
-### 2.3 第二代 VLA 的核心洞察
+### 1.3 第二代 VLA 的核心洞察
 
 **核心问题：如何让机器人像 GPT 那样泛化到开放世界？**
 
@@ -94,9 +66,39 @@ Levine 的核心洞察是：
 
 ---
 
-## 3. 核心内容解析
+## 2. 一句话总结
 
-### 3.1 互联网视频作为物理常识来源
+> **Sergey Levine 在 Actuate 2025 上系统梳理了机器人 Foundation Model 的演进路径：互联网视频预训练提供物理常识，跨形态数据实现泛化，VLA 架构从"感知-动作"端到端映射，第二代 VLA 的核心在于用强化学习后训练（RL Post-training）弥补模仿学习的数据分布缺陷。**
+
+---
+
+## 3. 视频概述
+
+### 3.1 基本信息
+
+| 信息项 | 内容 |
+|--------|------|
+| 视频标题 | Actuate 2025: Robotic Foundation Models with Liyiming Ke & Sergey Levine |
+| 嘉宾 | **Sergey Levine**（UC Berkeley 教授，Berkeley AI Research）<br>**Liyiming Ke**（卡内基梅隆大学） |
+| 会议 | Actuate 2025 - Foxglove 机器人开发者大会 |
+| 时长 | 25:06 |
+| 内容分类 | VLA (Vision-Language-Action Model) / 机器人 Foundation Model / 具身智能 |
+
+### 3.2 议题与关键词
+
+从视频标题和 Sergey Levine 的研究轨迹推断，本次演讲聚焦以下核心议题：
+
+- **第二代 VLA 架构设计**：从 RT-1/RT-2（第一代）到 π₀/π₀.₅（第二代）的范式演进
+- **数据多样性（Data Diversity）**：跨机器人形态（cross-embodiment）、跨场景数据收集
+- **互联网视频作为预训练信号**：利用大规模未标注视频学习物理常识
+- **BC-Z 的启示**：行为克隆（Behavior Cloning）与示教学习（Learning from Demonstrations）
+- **Foundation Model 训练策略**：如何用有限示教数据泛化到长尾任务
+
+---
+
+## 4. 核心内容解析
+
+### 4.1 互联网视频作为物理常识来源
 
 **图2：互联网视频预训练的价值**
 

@@ -41,7 +41,7 @@ LoRA（Low-Rank Adaptation）提出冻结预训练模型权重，通过在Transf
 
 **假设**：模型适配过程中权重更新 $\Delta W$ 具有低秩性。
 
-对于预训练权重 $W_0 \in \mathbb{R}}^{d \times k}$，我们冻结 $W_0$，同时用低秩分解来参数化 $\Delta W$：
+对于预训练权重 $W_{0} \in \mathbb{R}}^{d \times k}$，我们冻结 $W_{0}$，同时用低秩分解来参数化 $\Delta W$：
 
 $$\Delta W = BA, \quad B \in \mathbb{R}}^{d \times r}, \quad A \in \mathbb{R}}^{r \times k}$$
 
@@ -63,7 +63,7 @@ $$h = W_0 x + \frac{\alpha}{r} B A x$$
 
 ### 3.4 初始化策略
 
-- 矩阵 $A$：用高斯分布 $\mathcal{N}(0, \sigma^2)$ 随机初始化（$\sigma=0.0001$）
+- 矩阵 $A$：用高斯分布 $\mathcal{N}(0, \sigma^{2})$ 随机初始化（$\sigma=0.0001$）
 - 矩阵 $B$：**全部初始化为 0**
 
 **设计目的**：保证训练刚开始时 $\Delta W = 0$，模型完全等价于未微调的初始状态，防止起步阶段产生巨大的震荡。

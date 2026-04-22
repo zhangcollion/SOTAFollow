@@ -6,7 +6,7 @@
 
 ## 1. World Model 的任务定义
 
-World Model 从数据三元组 $(s_t, a_t, s_{t+1})$ 中学习一个动态模型：
+World Model 从数据三元组 $(s_{t}, a_{t}, s_{t+1})$ 中学习一个动态模型：
 
 $$
 \hat{s}_{t+1} = f_\theta(s_t, a_t)
@@ -24,9 +24,9 @@ Dreamer 系列是 World Model 的标杆架构，由以下组件构成：
 |------|------|------|
 | **Prior network** | $p_\theta(z_{t+1} \| h_{t+1})$ | 从隐状态 $h$ 预测下一帧 latent $z$ |
 | **Posterior network** | $q_\phi(z_{t+1} \| h_{t+1}, s_{t+1})$ | 编码真实观测得到 posterior |
-| **Representation network** | $p_\psi(s_t \| z_t)$ | 从 latent 重建观测 |
-| **Reward network** | $p_\rho(r_t \| z_t, a_t)$ | 预测 reward |
-| **Dynamics network** (RNN) | $h_{t+1} = g_\theta(h_t, z_t, a_t)$ | 循环状态更新 |
+| **Representation network** | $p_\psi(s_{t} \| z_{t})$ | 从 latent 重建观测 |
+| **Reward network** | $p_\rho(r_{t} \| z_{t}, a_{t})$ | 预测 reward |
+| **Dynamics network** (RNN) | $h_{t+1} = g_\theta(h_{t}, z_{t}, a_{t})$ | 循环状态更新 |
 
 > **来源**：DreamerV2 (Hafner et al., 2022, *Mastering Atari with Discrete World Models*)
 
@@ -49,9 +49,9 @@ $$
 | $q$ | 近似后验分布（encoder） |
 | $p_\theta$ | 先验/生成模型（decoder + dynamics） |
 | $s_{t+1}$ | $t+1$ 时刻的观测（图像/状态） |
-| $z_t$ | 隐变量（latent state） |
-| $a_t$ | $t$ 时刻执行的动作 |
-| $h_t$ | RNN 隐状态（recurrent state） |
+| $z_{t}$ | 隐变量（latent state） |
+| $a_{t}$ | $t$ 时刻执行的动作 |
+| $h_{t}$ | RNN 隐状态（recurrent state） |
 | $\beta$ | KL 权重系数（通常 0.1），控制重建质量与先验匹配的 trade-off |
 
 **KL 项的物理意义**：让模型学到的"预测分布"（prior）尽可能接近"真实后验分布"（posterior）。KL 太小 → posterior collapse（所有 $z$ 趋向先验）；太大 → posterior 主导，模型失去生成能力。
@@ -121,10 +121,10 @@ $$
 
 | 符号 | 含义 |
 |------|------|
-| $\hat{r}_t$ | 模型预测的 reward |
-| $r_t$ | 真实 reward |
+| $\hat{r}_{t}$ | 模型预测的 reward |
+| $r_{t}$ | 真实 reward |
 
-**注**：Dreamer 系列中 reward head 与 decoder 共享 latent $z_t$，但独立输出层。
+**注**：Dreamer 系列中 reward head 与 decoder 共享 latent $z_{t}$，但独立输出层。
 
 > **来源**：DreamerV3 paper Section 3.3
 
@@ -152,7 +152,7 @@ $$\mathcal{L}_{\text{LPIPS}} = \sum_{l} \| \phi_l(\hat{I}) - \phi_l(I) \|_2^2$$
 
 | 元素 | 含义 |
 |------|------|
-| $\phi_l$ | 预训练 VGG/AlexNet 的第 $l$ 层特征提取器 |
+| $\phi_{l}$ | 预训练 VGG/AlexNet 的第 $l$ 层特征提取器 |
 | $l$ | 通常取 2-3 层（浅层保结构，深层保语义） |
 
 **优势**：感知相似性比像素级更接近人类判断，梯度更稳定。
@@ -207,9 +207,9 @@ $$\mathcal{L}_{\text{VQ}} = \| \hat{x} - x \|^2 + \| \text{sg}[z_e] - e_k \|^2 +
 |------|------|
 | $x$ | 原始观测 |
 | $\hat{x}$ | 重建图像 |
-| $z_e$ | encoder 输出的 continuous latent |
-| $e_k$ | Codebook 中第 $k$ 个 embedding（最近邻选择） |
-| $\text{sg}[\cdot]$ | Straight-through estimator（直通估计，forward 保留 $z_e$，backward 传 $e_k$ 梯度） |
+| $z_{e}$ | encoder 输出的 continuous latent |
+| $e_{k}$ | Codebook 中第 $k$ 个 embedding（最近邻选择） |
+| $\text{sg}[\cdot]$ | Straight-through estimator（直通估计，forward 保留 $z_{e}$，backward 传 $e_{k}$ 梯度） |
 | $\beta$ | commitment loss 权重（通常 0.25） |
 
 **第一项**：重建误差；**第二项**：codebook 更新使其逼近 encoder 输出；**第三项**：encoder 被惩罚"偏离" codebook，防止encoder输出任意大值。
