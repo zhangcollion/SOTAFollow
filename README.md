@@ -61,6 +61,7 @@
 | **DCT（离散余弦变换）** | 频域信号处理基础：DCT-II定义、频率物理含义、与FFT对比，及其在MINT频域解耦中的作用 | [DCT（离散余弦变换）详解.md](./FM基础知识/DCT（离散余弦变换）详解.md) |
 | **Kimi Attention Residuals** | Moonshot AI：跨层选择性注意力残差连接，相同 Loss 下节省 25% 计算资源，Infra 是结构创新上限 | [Kimi_Attention_Residuals_精读报告.md](./FM基础知识/Kimi_Attention_Residuals_精读报告.md) |
 | **RoPE / 3DPE / mRoPE** | 位置编码技术详解：Sinusoidal、Learned、ALiBi、RoPE、2D/3DPE、mRoPE（DVGT-2 时序融合） | [RoPE及3DPE技术详解.md](./FM基础知识/RoPE及3DPE技术详解.md) |
+| **MEM（记忆机制）** | Gated Memory Policy：学习何时/召回什么记忆、Cross-Attention 时序融合、Diffusion Noise 增强、KV Cache 高效推理 | [MEM/GMP_精读报告.md](./FM%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/MEM/GMP_%E7%B2%BE%E8%AF%BB%E6%8A%A5%E5%91%8A.md) |
 | **流式三维重建 GCT** | Ant Group：几何上下文注意力替代全连接注意力，ETH3D 98.98% F1 + 20 FPS，突破长序列漂移瓶颈 | [流式三维重建-几何上下文Transformer-精读报告.md](./FM基础知识/流式三维重建-几何上下文Transformer-精读报告.md) |
 | PETR | 自动驾驶 3D 检测：3D 位置编码融合相机几何，DETR 范式端到端检测 | [PETR-论文精读.md](./FM基础知识/PETR-论文精读.md) |
 | PETR V2 | PETR 改进：Feature-Guided Position Encoding、3D 坐标对齐时序融合 | [PETR V2-论文精读.md](./FM基础知识/PETR%20V2-论文精读.md) |
