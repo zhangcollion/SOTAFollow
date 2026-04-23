@@ -33,6 +33,7 @@
 | MV-VDP | arXiv 2026 | 多视角视频扩散策略，视频基础模型联合预测 RGB 视频 + 热力图，5 demos Meta-World 89.1% | [MV-VDP_精读报告.md](./WorldModel/MV-VDP_精读报告.md) |
 | LeWorldModel | arXiv 2026 | 首个端到端 JEPA 世界模型，SIGReg 正则器防崩溃，15M 参数单 GPU 可训，48x 规划加速 | [LeWorldModel-论文精读报告.md](./WorldModel/LeWorldModel-论文精读报告.md) |
 | DreamerAD | arXiv 2026 | 基于解析世界模型的自动驾驶车辆控制，Shortcut Forcing 80× 加速，EPDMS 87.7 SOTA | [DreamerAD-论文解读.md](./WorldModel/DreamerAD-论文解读.md) |
+| **Epona** | arXiv 2025 | 自回归扩散世界模型，解耦时空因子分解 + Chain-of-Forward 训练，分钟级视频预测 + 实时轨迹规划 | [Epona-精读报告.md](./WorldModel/Epona-精读报告.md) |
 | Fast-WAM | arXiv 2026 | 北大&华为：World Action Model 测试时想象是否必要？端到端规划加速 48× | [Fast-WAM_精读报告.md](./WorldModel/Fast-WAM_精读报告.md) |
 | Latent-WAM | arXiv 2026 | 中科院&长安汽车：SCWE 16-query 场景压缩 + WorldMirror 几何蒸馏 + DLWM 因果世界建模，感知自由 89.3 EPDMS SOTA，104M 参数 | [Latent-WAM_精读报告.md](./WorldModel/Latent-WAM_精读报告.md) |
 | **Being-H0.7** | 2026 | BeingBeyond：潜在世界动作模型，先验-后验双分支联合对齐，MoT 高效实现，200K 小时自我中心视频预训练，6 仿真基准 SOTA | [Being-H0.7_精读报告.md](./WorldModel/Being-H0.7_精读报告.md) |
