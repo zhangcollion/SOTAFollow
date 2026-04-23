@@ -25,7 +25,7 @@ $$
 
 ### 关键变体
 
-- **Flash Attention**：IO-aware 精确注意力，减少 HBM 访问（$O(N^2)$ → $O(N)$ 显存）
+- **Flash Attention**：IO-aware 精确注意力，减少 HBM 访问（$O(N^{2})$ → $O(N)$ 显存）
 - **Grouped Query Attention (GQA)**：多头注意力与KV缓存的高效折中
 - **Sparse Attention**：BigBird、Longformer 等长上下文建模
 
@@ -181,7 +181,7 @@ $$
 
 | 方法 | 原理 | 显存节省 |
 |------|------|----------|
-| **LoRA** | 低秩分解 $W = W_0 + BA$, $A,B$ 可训练 | ~70-80% |
+| **LoRA** | 低秩分解 $W = W_{0} + BA$, $A,B$ 可训练 | ~70-80% |
 | **QLoRA** | 4-bit NF4 量化 + LoRA | ~65% |
 | **AdaLoRA** | 自适应 rank 分配 | 动态调整 |
 | **LoRA+ / DoRA** | 改进的学习率与权重分解 | 收敛更快 |
@@ -413,7 +413,7 @@ $$
 
 | 维度 | Transformer | Mamba (SSM) |
 |------|-------------|--------------|
-| 复杂度 | $O(N^2)$ 注意力 | $O(N)$ 线性 |
+| 复杂度 | $O(N^{2})$ 注意力 | $O(N)$ 线性 |
 | 长序列 | 受限 (需 Flash Attention) | 更擅长 |
 | 并行训练 | 强 (矩阵运算) | 中等 |
 | 推理效率 | 较低 (Full Attention) | 高 (线性) |

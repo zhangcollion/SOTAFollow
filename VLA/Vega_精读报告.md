@@ -17,30 +17,9 @@
 
 ---
 
-## 2. 一句话总结
+## 2. Motivation（问题背景）
 
-**Vega** 提出了一个**统一的多模态生成-规划框架**，通过将**自然语言指令**引入自动驾驶决策过程，并利用**未来帧图像生成**作为密集监督信号，弥补传统 VLA 模型稀疏动作监督的缺陷，实现了 SOTA 的指令跟随驾驶能力。
-
----
-
-## 3. 拟人化开篇
-
-![图 1：Vega 指令跟随驾驶可视化](https://arxiv.org/html/2603.25741v1/x1.png)
-
-> **图 1**：Vega 论文 Teaser — 同一场景多条轨迹跟随不同指令。给定不同指令（"Pull up to the side"、"Follow the car straight through the intersection"、"Goal along the road and pass the orange traffic barrier"、"Stop at the crosswalk, wait for the light to turn green"），Vega 能预测出完全不同的多条轨迹。
-
-
-想象你坐在副驾驶，对司机说："**前面那辆车开得太慢了，超它然后赶下一个绿灯**"。一个普通司机听完会心领神会，果断变道加速——而老司机甚至能预判超车后前方路况会变成什么样。
-
-但大多数现有自动驾驶模型呢？它们只听得懂"左转"、"直行"这样封闭的导航指令，面对"超车赶绿灯"这种**灵活的自然语言指令**就束手无策了。它们要么模仿一个保守的专家策略，要么压根不理会你的个性化需求。
-
-**Vega** 就是来解决这个问题的——它不仅能听懂你的自然语言指令，还能据此规划出**多条不同的轨迹**，并"想象"出遵循这条指令驾驶后，未来会看到什么样的画面。
-
----
-
-## 4. 背景与问题动机
-
-### 4.1 自动驾驶技术演进路线
+### 2.1 自动驾驶技术演进路线
 
 自动驾驶技术栈经历了三次范式转变：
 
@@ -50,7 +29,7 @@
 | **VLA (Vision-Language-Action)** | GPT-Driver, AutoVLA | 语言仅用于场景描述或推理，缺乏灵活指令跟随 |
 | **世界模型增强VLA** | DriveVLA-W0 | 引入未来预测增强规划，但无法做指令跟随 |
 
-### 4.2 核心问题：稀疏动作监督
+### 2.2 核心问题：稀疏动作监督
 
 现有 VLA 模型的致命缺陷：**高维视觉-语言输入 → 低维动作输出** 的映射，缺乏足够的监督信号。
 
@@ -63,7 +42,7 @@
 
 论文做了一个 VLA Baseline 实验验证这一问题——直接用 Qwen2.5-VL 加一个 planning head，在相同数据集上训练，**仅达到 ~60 PDMS**（远低于 SOTA 的 90+），且频繁生成不符合指令的轨迹。
 
-### 4.3 从模仿驾驶到指令驾驶
+### 2.3 从模仿驾驶到指令驾驶
 
 Vega 将这一转变定义为：
 
@@ -71,6 +50,27 @@ Vega 将这一转变定义为：
 
 - **Imitation Driving**：模型只能模仿训练数据中专家的平均策略
 - **Instructional Driving**：模型能根据用户自然语言指令，生成**多样化的**、符合指令的轨迹
+
+---
+
+## 3. 一句话总结
+
+**Vega** 提出了一个**统一的多模态生成-规划框架**，通过将**自然语言指令**引入自动驾驶决策过程，并利用**未来帧图像生成**作为密集监督信号，弥补传统 VLA 模型稀疏动作监督的缺陷，实现了 SOTA 的指令跟随驾驶能力。
+
+---
+
+## 4. 拟人化开篇
+
+![图 1：Vega 指令跟随驾驶可视化](https://arxiv.org/html/2603.25741v1/x1.png)
+
+> **图 1**：Vega 论文 Teaser — 同一场景多条轨迹跟随不同指令。给定不同指令（"Pull up to the side"、"Follow the car straight through the intersection"、"Goal along the road and pass the orange traffic barrier"、"Stop at the crosswalk, wait for the light to turn green"），Vega 能预测出完全不同的多条轨迹。
+
+
+想象你坐在副驾驶，对司机说："**前面那辆车开得太慢了，超它然后赶下一个绿灯**"。一个普通司机听完会心领神会，果断变道加速——而老司机甚至能预判超车后前方路况会变成什么样。
+
+但大多数现有自动驾驶模型呢？它们只听得懂"左转"、"直行"这样封闭的导航指令，面对"超车赶绿灯"这种**灵活的自然语言指令**就束手无策了。它们要么模仿一个保守的专家策略，要么压根不理会你的个性化需求。
+
+**Vega** 就是来解决这个问题的——它不仅能听懂你的自然语言指令，还能据此规划出**多条不同的轨迹**，并"想象"出遵循这条指令驾驶后，未来会看到什么样的画面。
 
 ---
 
@@ -90,12 +90,12 @@ Vega 是一个**统一的自回归-扩散混合架构**，命名为 **Vision-Lan
 
 > **图 2**：Vega 的整体框架图，左侧展示传统模仿驾驶模型（单一专家轨迹 + 导航命令），右侧展示 Vega（多模态指令 + 个性化轨迹 + 世界建模）。Vega 同时输出动作规划和未来图像预测，实现真正的指令跟随。
 
-### 5.2 输入编码
+### 4.2 输入编码
 
 **文本**：Qwen2.5 tokenizer
 
 **视觉输入**（仅用前视相机）：
-1. **VAE encoder** → 压缩为 latent $F_t^V$（用于 diffusion 生成）
+1. **VAE encoder** → 压缩为 latent $F_{t}^{V}$（用于 diffusion 生成）
 2. **SigLIP2 ViT encoder** → 提取语义特征，拼接至 VAE latents（增强视觉上下文）
 
 **动作编码**：
@@ -103,7 +103,7 @@ Vega 是一个**统一的自回归-扩散混合架构**，命名为 **Vision-Lan
 - 目的：不同步的动作共享分布，易于归一化
 - 经 Linear head 投影至模型 latent 维度
 
-### 5.3 构建输入序列（Interleaving Design）
+### 4.3 构建输入序列（Interleaving Design）
 
 序列结构（**严格因果**）：
 
@@ -114,7 +114,7 @@ S = [I_{t-T}, ..., I_t,  L_t,  A_t^{noisy}]
 ```
 
 训练时两个任务**联合优化**：
-- **动作规划任务**：预测 $A_t^{(N)} = [A_t, ..., A_{t+N-1}]$
+- **动作规划任务**：预测 $A_{t}^{(N)} = [A_{t}, ..., A_{t+N-1}]$
 - **世界建模任务**：预测 $I_{t+K}$（未来图像）
 
 关键设计：**级联条件化**（Cascaded Conditioning）：
@@ -122,11 +122,11 @@ S = [I_{t-T}, ..., I_t,  L_t,  A_t^{noisy}]
 - 训练阶段：解决"后续 token 会 attend to 噪声 token"的 mismatch 问题
 
 **解决方案**：对同时作为预测目标和后续条件化的 latent，做**两份拷贝**：
-- **Copy 1** ($F_t^{noisy}$)：添加噪声，用于去噪监督
-- **Copy 2** ($F_t^{clean}$)：保持干净，作为条件输入
+- **Copy 1** ($F_{t}^{noisy}$)：添加噪声，用于去噪监督
+- **Copy 2** ($F_{t}^{clean}$)：保持干净，作为条件输入
 - 从所有后续 token 遮蔽 Copy 1，确保它们只 attend to clean latents
 
-### 5.4 Mixture-of-Transformers (MoT) 架构
+### 4.4 Mixture-of-Transformers (MoT) 架构
 
 ![图 3：Vega 统一 VLA 框架](https://arxiv.org/html/2603.25741v1/x3.png)
 
@@ -145,7 +145,7 @@ S = [I_{t-T}, ..., I_t,  L_t,  A_t^{noisy}]
 **为什么 Action Expert 用更小的 hidden size (256)？**
 → 动作空间维度低，降低计算开销，同时不显著损伤性能
 
-### 5.5 训练目标
+### 4.5 训练目标
 
 两个 diffusion 任务的联合优化：
 
@@ -160,7 +160,7 @@ $$\mathcal{L}_V = \mathbb{E}_{F_{t+N}^V, \epsilon, n} \left[ \|\epsilon - \hat{\
 **总损失**：
 $$\mathcal{L} = \lambda_A \cdot \mathcal{L}_A + \lambda_V \cdot \mathcal{L}_V, \quad \lambda_A = \lambda_V = 1.0$$
 
-### 5.6 数据集：InstructScene
+### 4.6 数据集：InstructScene
 
 基于 **NAVSIM** 构建，约 **100,000 scenes**，两阶段自动标注：
 

@@ -23,6 +23,7 @@
 | Actuate 2025 | 视频 2026 | Sergey Levine & Liyiming Ke：第二代 VLA 与机器人 Foundation Model，RL Post-training 是模仿学习的关键补充 | [Actuate2025_SergeyLevine_精读报告.md](./VLA/Actuate2025_SergeyLevine_精读报告.md) |
 | **MINT** | arXiv 2026 | 上交大：频域多尺度动作Tokenizer（SDAT），解耦Intent Token与Execution Tokens，One-Shot跨任务迁移超越Fine-tuning 60pp，LIBERO 98.3% SOTA | [MINT-论文精读-arXiv2602.08602.md](./VLA/MINT/MINT-论文精读-arXiv2602.08602.md) |
 | **π0.7** | PI 2026 | 多样化上下文条件化，通用模型无需微调匹配专用RL，零样本跨本体衬衫折叠达到人类专家水平，~5B参数（Gemma3 4B + 860M Action Expert） | [π0.7_精读报告.md](./VLA/π0.7_精读报告.md) |
+| **VISTA** | arXiv 2026 | 世界模型生成视觉子目标，层次化VLA架构解决泛化瓶颈，未见场景14%→69%提升 | [VISTA_精读报告.md](./VLA/VISTA_精读报告.md) |
 
 ## WorldModel
 
@@ -40,6 +41,7 @@
 
 | 论文 | 会议/年份 | 核心贡献 | 文档 |
 |------|----------|----------|------|
+| **XXPO 系列算法** | — | PPO/GRPO/GSPO/DAPO/GMPO 算法精读：原理详解、对比分析、演化路径 | [XXPO系列算法精读报告.md](./RL/XXPO系列算法精读报告.md) |
 | **FlowGRPO** | arXiv 2025 | 首个将 GRPO 引入 Flow Matching 的工作：marginal-preserving ODE-to-SDE 转换（推导 reverse-time SDE 并离散化）+ Denoising Reduction（训练10步/推理全步），SD3.5-M GenEval 63%→95%，几乎无 reward hacking | [FlowGRPO_精读报告.md](./RL/FlowGRPO_精读报告.md) |
 | PPO 精读 | - | 策略优化算法详解：Clipped Surrogate、GAE 优势估计、与 TRPO/SAC/DQN 对比、Python 伪代码、面试常见问题 | [PPO_精读报告.md](./RL/PPO_精读报告.md) |
 | **RAD** | NeurIPS 2025 | 首个3DGS-RL端到端自动驾驶训练框架，RL+IL协同优化解决因果混淆和开环gap，碰撞率降低3倍 | [RAD_精读报告.md](./RL/RAD_精读报告.md) |
@@ -62,6 +64,7 @@
 | **DCT（离散余弦变换）** | 频域信号处理基础：DCT-II定义、频率物理含义、与FFT对比，及其在MINT频域解耦中的作用 | [DCT（离散余弦变换）详解.md](./FM基础知识/DCT（离散余弦变换）详解.md) |
 | **Kimi Attention Residuals** | Moonshot AI：跨层选择性注意力残差连接，相同 Loss 下节省 25% 计算资源，Infra 是结构创新上限 | [Kimi_Attention_Residuals_精读报告.md](./FM基础知识/Kimi_Attention_Residuals_精读报告.md) |
 | **RoPE / 3DPE / mRoPE** | 位置编码技术详解：Sinusoidal、Learned、ALiBi、RoPE、2D/3DPE、mRoPE（DVGT-2 时序融合） | [RoPE及3DPE技术详解.md](./FM基础知识/RoPE及3DPE技术详解.md) |
+| **MEM（记忆机制）** | Gated Memory Policy：学习何时/召回什么记忆、Cross-Attention 时序融合、Diffusion Noise 增强、KV Cache 高效推理 | [MEM/GMP_精读报告.md](./FM%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/MEM/GMP_%E7%B2%BE%E8%AF%BB%E6%8A%A5%E5%91%8A.md) |
 | **流式三维重建 GCT** | Ant Group：几何上下文注意力替代全连接注意力，ETH3D 98.98% F1 + 20 FPS，突破长序列漂移瓶颈 | [流式三维重建-几何上下文Transformer-精读报告.md](./FM基础知识/流式三维重建-几何上下文Transformer-精读报告.md) |
 | PETR | 自动驾驶 3D 检测：3D 位置编码融合相机几何，DETR 范式端到端检测 | [PETR-论文精读.md](./FM基础知识/PETR-论文精读.md) |
 | PETR V2 | PETR 改进：Feature-Guided Position Encoding、3D 坐标对齐时序融合 | [PETR V2-论文精读.md](./FM基础知识/PETR%20V2-论文精读.md) |
