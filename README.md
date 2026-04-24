@@ -69,6 +69,12 @@
 | PETR | 自动驾驶 3D 检测：3D 位置编码融合相机几何，DETR 范式端到端检测 | [PETR-论文精读.md](./FM基础知识/PETR-论文精读.md) |
 | PETR V2 | PETR 改进：Feature-Guided Position Encoding、3D 坐标对齐时序融合 | [PETR V2-论文精读.md](./FM基础知识/PETR%20V2-论文精读.md) |
 
+## LLM
+
+| 论文 | 会议/年份 | 核心贡献 | 文档 |
+|------|----------|----------|------|
+| **DeepSeek-V4** | arXiv 2025 | CSA+HCA混合稀疏注意力，1M token上下文仅27% FLOPs+10% KV Cache，mHC流形约束超连接，Muon优化器，FP4 QAT | [DeepSeek-V4_论文精读.md](./LLM/DeepSeek-V4_论文精读-arXiv2503.24978.md) |
+
 ## DailyAgent
 
 > AI 工具使用技巧、Agent 工作流、效率提升策略
