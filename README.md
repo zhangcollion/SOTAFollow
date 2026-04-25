@@ -24,6 +24,7 @@
 | **MINT** | arXiv 2026 | 上交大：频域多尺度动作Tokenizer（SDAT），解耦Intent Token与Execution Tokens，One-Shot跨任务迁移超越Fine-tuning 60pp，LIBERO 98.3% SOTA | [MINT-论文精读-arXiv2602.08602.md](./VLA/MINT/MINT-论文精读-arXiv2602.08602.md) |
 | **π0.7** | PI 2026 | 多样化上下文条件化，通用模型无需微调匹配专用RL，零样本跨本体衬衫折叠达到人类专家水平，~5B参数（Gemma3 4B + 860M Action Expert） | [π0.7_精读报告.md](./VLA/π0.7_精读报告.md) |
 | **VISTA** | arXiv 2026 | 世界模型生成视觉子目标，层次化VLA架构解决泛化瓶颈，未见场景14%→69%提升 | [VISTA_精读报告.md](./VLA/VISTA_精读报告.md) |
+| **VLA-JEPA** | arXiv 2026 | JEPA风格VLA预训练，无泄露状态预测，时序因果注意力，流匹配动作头 | [VLA-JEPA_论文精读-arXiv2602.10098.md](./VLA/VLA-JEPA_论文精读-arXiv2602.10098.md) |
 
 ## WorldModel
 
@@ -73,6 +74,12 @@
 | **流式三维重建 GCT** | Ant Group：几何上下文注意力替代全连接注意力，ETH3D 98.98% F1 + 20 FPS，突破长序列漂移瓶颈 | [流式三维重建-几何上下文Transformer-精读报告.md](./FM基础知识/流式三维重建-几何上下文Transformer-精读报告.md) |
 | PETR | 自动驾驶 3D 检测：3D 位置编码融合相机几何，DETR 范式端到端检测 | [PETR-论文精读.md](./FM基础知识/PETR-论文精读.md) |
 | PETR V2 | PETR 改进：Feature-Guided Position Encoding、3D 坐标对齐时序融合 | [PETR V2-论文精读.md](./FM基础知识/PETR%20V2-论文精读.md) |
+
+## LLM
+
+| 论文 | 会议/年份 | 核心贡献 | 文档 |
+|------|----------|----------|------|
+| **DeepSeek-V4** | arXiv 2025 | CSA+HCA混合稀疏注意力，1M token上下文仅27% FLOPs+10% KV Cache，mHC流形约束超连接，Muon优化器，FP4 QAT | [DeepSeek-V4_论文精读.md](./LLM/DeepSeek-V4_论文精读-arXiv2503.24978.md) |
 
 ## DailyAgent
 
